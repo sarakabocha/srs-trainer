@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Korean SRS Trainer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #ffffff;
+    --bg-secondary: #f5f4f0;
+    --bg-tertiary: #efefeb;
+    --text: #1a1a18;
+    --text-secondary: #6b6b67;
+    --border: rgba(0,0,0,0.12);
+    --border-hover: rgba(0,0,0,0.25);
+    --teal: #1D9E75;
+    --teal-light: #E1F5EE;
+    --teal-dark: #085041;
+    --teal-mid: #5DCAA5;
+    --amber: #EF9F27;
+    --amber-dark: #412402;
+    --red: #E24B4A;
+    --red-light: #FCEBEB;
+    --red-dark: #791F1F;
+    --blue-light: #E6F1FB;
+    --blue-dark: #0C447C;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --font: 'Georgia', serif;
+    --font-ui: system-ui, -apple-system, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a18;
+      --bg-secondary: #242420;
+      --bg-tertiary: #2e2e2a;
+      --text: #f0efe8;
+      --text-secondary: #9a9a92;
+      --border: rgba(255,255,255,0.1);
+      --border-hover: rgba(255,255,255,0.22);
+      --teal-light: #04342C;
+      --teal-dark: #9FE1CB;
+      --blue-light: #042C53;
+      --blue-dark: #B5D4F4;
+      --red-light: #501313;
+      --red-dark: #F7C1C1;
+    }
+  }
+
+  body {
+    font-family: var(--font-ui);
+    background: var(--bg-tertiary);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  .wrap { width: 100%; max-width: 560px; }
+
+  .app-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+  .app-title { font-size: 20px; font-weight: 500; color: var(--text); }
+  .app-sub { font-size: 13px; color: var(--text-secondary); }
+
+  .card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-bottom: 1rem; }
+  .stat { background: var(--bg-secondary); border-radius: var(--radius-md); padding: 10px 12px; }
+  .stat .n { font-size: 22px; font-weight: 500; color: var(--text); }
+  .stat .l { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+  button {
+    cursor: pointer;
+    font-family: var(--font-ui);
+    font-size: 14px;
+    border-radius: var(--radius-md);
+    border: 0.5px solid var(--border-hover);
+    background: transparent;
+    color: var(--text);
+    padding: 8px 14px;
+    transition: background .15s;
+  }
+  button:hover { background: var(--bg-secondary); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-full { width: 100%; padding: 11px; font-size: 15px; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.75rem; }
+
+  input[type=text], textarea {
+    width: 100%;
+    border: 0.5px solid var(--border-hover);
+    border-radius: var(--radius-md);
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: var(--font-ui);
+    background: transparent;
+    color: var(--text);
+  }
+  input[type=text]:focus, textarea:focus { outline: none; border-color: var(--teal); }
+  textarea { resize: none; min-height: 72px; }
+
+  .phase-bar { display: flex; gap: 5px; margin-bottom: 1rem; }
+  .pip { height: 4px; flex: 1; border-radius: 2px; background: var(--border); }
+  .pip.done { background: var(--teal); }
+  .pip.active { background: var(--teal-mid); }
+
+  .answer-box {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: .875rem 1rem;
+    margin-top: .75rem;
+  }
+
+  .rate-row { display: flex; gap: 8px; margin-top: .75rem; }
+  .rate-row button { flex: 1; padding: 9px 6px; font-size: 13px; }
+  .btn-good { border-color: var(--teal); color: var(--teal-dark); }
+  .btn-hard { border-color: #D85A30; color: #993C1D; }
+
+  .streak-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+  .streak-flame {
+    width: 22px; height: 22px;
+    background: var(--amber);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+    color: var(--amber-dark);
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+  }
+  .badge-hard { background: var(--red-light); color: var(--red-dark); }
+
+  .word-row {
+    display: flex; align-items: center;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .word-row:last-child { border-bottom: none; }
+  .del-btn {
+    font-size: 12px; color: var(--text-secondary);
+    background: none; border: none;
+    cursor: pointer; padding: 2px 6px;
+    margin-left: auto;
+  }
+  .del-btn:hover { color: var(--red); background: none; }
+
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+  .hidden { display: none; }
+  .muted { font-size: 13px; color: var(--text-secondary); }
+
+  .big { font-size: 34px; font-weight: 500; color: var(--text); line-height: 1.2; }
+  #add-feedback { font-size: 13px; color: var(--teal); margin-top: 6px; min-height: 18px; }
+  .ai-feedback-box { border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: .875rem 1rem; margin-top: .75rem; font-size: 13px; line-height: 1.7; color: var(--text); }
+  .ai-feedback-box .fb-label { font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; }
+  .fb-score { display: inline-block; font-size: 13px; font-weight: 500; padding: 2px 10px; border-radius: var(--radius-md); margin-bottom: 8px; }
+  .score-great { background: var(--teal-light); color: var(--teal-dark); }
+  .score-ok { background: #FAEEDA; color: #633806; }
+  .score-revise { background: var(--red-light); color: var(--red-dark); }
+  .ai-loading { color: var(--text-secondary); font-size: 13px; margin-top: .75rem; font-style: italic; }
+  .api-key-row { display: flex; gap: 8px; margin-top: 8px; }
+  .api-key-row input { flex: 1; font-size: 13px; padding: 7px 10px; }
+  .divider { height: 0.5px; background: var(--border); margin: 6px 0; }
+  kbd { display: inline-block; font-family: var(--font-ui); font-size: 10px; padding: 1px 5px; border-radius: 4px; border: 0.5px solid var(--border-hover); color: var(--text-secondary); background: var(--bg-secondary); margin-left: 4px; vertical-align: middle; }
+  .story-text { font-size: 16px; line-height: 1.9; color: var(--text); }
+  .story-translation { font-size: 13px; line-height: 1.8; color: var(--text-secondary); margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
+  .story-word { font-weight: 500; color: var(--teal); }
+  .sentence-chip { font-size: 13px; color: var(--text-secondary); padding: 6px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 6px; line-height: 1.5; }
+  .sentence-chip .chip-word { font-weight: 500; color: var(--text); font-size: 12px; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="app-header">
+    <div class="app-title">한국어 단어장</div>
+    <div class="app-sub">spaced repetition trainer</div>
+    <div style="margin-left:auto;position:relative">
+      <button id="menu-btn" onclick="toggleMenu()" style="padding:6px 10px;font-size:18px;line-height:1;border-radius:var(--radius-md);border:0.5px solid var(--border);color:var(--text-secondary)" title="More options">···</button>
+      <div id="dropdown-menu" class="hidden" style="position:absolute;right:0;top:calc(100% + 6px);background:var(--bg);border:0.5px solid var(--border-hover);border-radius:var(--radius-lg);padding:6px;min-width:220px;z-index:100">
+        <button onclick="exportData()" style="width:100%;text-align:left;padding:8px 12px;border:none;border-radius:var(--radius-md);font-size:14px;display:block">export progress</button>
+        <button onclick="document.getElementById('import-input').click()" style="width:100%;text-align:left;padding:8px 12px;border:none;border-radius:var(--radius-md);font-size:14px;display:block">import progress</button>
+        <input type="file" id="import-input" accept=".json" class="hidden" onchange="importData(event)" />
+        <div class="divider"></div>
+        <div style="padding:6px 12px 4px">
+          <div style="font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:6px">AI feedback</div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:6px">Paste your Anthropic API key to enable sentence feedback.</div>
+          <div class="api-key-row">
+            <input type="password" id="api-key-input" placeholder="sk-ant-..." />
+            <button onclick="saveApiKey()" style="white-space:nowrap;font-size:13px;padding:7px 10px">save</button>
+          </div>
+          <div id="api-key-status" style="font-size:12px;margin-top:4px;min-height:16px;color:var(--teal)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="sync-feedback" style="font-size:13px;color:var(--teal);min-height:18px;margin-bottom:0.5rem;text-align:right"></div>
+
+  <div id="home-screen">
+    <div class="streak-row">
+      <div class="streak-flame" id="streak-num">0</div>
+      <span class="muted">day streak</span>
+      <span style="margin-left:auto;font-size:13px;color:var(--text-secondary)" id="last-session-label"></span>
+    </div>
+    <div class="stat-grid">
+      <div class="stat"><div class="n" id="s-total">0</div><div class="l">total words</div></div>
+      <div class="stat"><div class="n" id="s-due">0</div><div class="l">due today</div></div>
+      <div class="stat"><div class="n" id="s-hard">0</div><div class="l">struggling</div></div>
+      <div class="stat"><div class="n" id="s-sessions">0</div><div class="l">sessions</div></div>
+    </div>
+    <div class="card">
+      <div class="label">today's queue</div>
+      <div id="due-summary" style="font-size:15px;color:var(--text);margin:6px 0 .75rem;line-height:1.5"></div>
+      <button class="btn-full" id="start-btn" onclick="startSession()">시작 — start review</button>
+    </div>
+    <div class="card">
+      <div class="section-head"><div class="label" style="margin:0">add words</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input type="text" id="add-ko" placeholder="Korean word" />
+        <input type="text" id="add-en" placeholder="Meaning / definition" />
+      </div>
+      <div class="btn-row" style="margin-top:0">
+        <button onclick="addSingleWord()" style="flex:1">add word</button>
+        <button onclick="toggleBulk()" style="flex:1" id="bulk-toggle-btn">bulk paste</button>
+      </div>
+      <div id="bulk-area" class="hidden" style="margin-top:8px">
+        <textarea id="bulk-input" placeholder="One per line:&#10;갑자기 suddenly&#10;당황하다 to be flustered&#10;어쩌면 perhaps"></textarea>
+        <button onclick="addBulk()" style="margin-top:6px;width:100%">add all</button>
+      </div>
+      <div id="add-feedback"></div>
+    </div>
+    <div class="card">
+      <div class="section-head">
+        <div class="label" style="margin:0">struggling words</div>
+        <span class="muted" id="hard-count-label"></span>
+      </div>
+      <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
+    </div>
+    <div class="card">
+      <div class="section-head">
+        <div class="label" style="margin:0">word bank</div>
+        <button class="del-btn" onclick="toggleWordBank()">show / hide</button>
+      </div>
+      <div id="word-bank-list" class="hidden"></div>
+    </div>
+  </div>
+
+  <div id="session-screen" class="hidden">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:.75rem">
+      <span class="muted" id="sess-progress"></span>
+      <button onclick="endSessionEarly()" style="margin-left:auto;font-size:12px;padding:4px 10px;color:var(--text-secondary)">end early</button>
+    </div>
+    <div class="phase-bar" id="phase-bar"></div>
+    <div id="phase-content"></div>
+  </div>
+
+  <div id="done-screen" class="hidden">
+    <div class="card" style="text-align:center;padding:2rem 1.25rem">
+      <div style="font-size:22px;font-weight:500;color:var(--text);margin-bottom:6px">세션 완료</div>
+      <div class="muted" style="margin-bottom:1.25rem;line-height:1.6" id="done-msg"></div>
+      <div class="stat-grid" id="done-stats" style="margin-bottom:1.25rem"></div>
+      <button class="btn-full" onclick="goHome()">back to home</button>
+    </div>
+    <div class="card" id="story-card" style="margin-top:0.75rem">
+      <div class="label" style="margin-bottom:0.75rem">오늘의 이야기</div>
+      <div id="story-sentences" style="margin-bottom:1rem"></div>
+      <div id="story-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CONTEXTS=[
+  (ko,en)=>`Fill in the blank with "${ko}" (${en}):\n"오늘 회의에서 팀장이 ___ 말했다."\nUse it naturally — change the sentence if needed.`,
+  (ko,en)=>`Write a one-line drama dialogue where a character says "${ko}" (${en}). Any genre works.`,
+  (ko,en)=>`Describe a situation from your own life (real or imagined) using "${ko}" (${en}).`,
+  (ko,en)=>`Rewrite this sentence using "${ko}" (${en}):\n"그 사람이 갑자기 이상한 행동을 했다."`,
+  (ko,en)=>`Show the nuance of "${ko}" (${en}) — when would you use it instead of a similar word?`,
+];
+const INTERVALS={good:[1,3,7,14,30],ok:[1,2,4,10],hard:[0,0,1,2]};
+
+function getDB(){try{const d=localStorage.getItem('kr_srs');return d?JSON.parse(d):{words:{},sessions:0,streak:0,lastDate:null};}catch(e){return{words:{},sessions:0,streak:0,lastDate:null};}}
+function saveDB(db){try{localStorage.setItem('kr_srs',JSON.stringify(db));}catch(e){}}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function isDue(w){if(!w.nextReview)return true;return w.nextReview<=todayStr();}
+function nextInterval(w,rating){const lvl=Math.max(0,Math.min((w.level||0),4));const arr=INTERVALS[rating]||INTERVALS.ok;const days=arr[Math.min(lvl,arr.length-1)];const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
+function updateStreak(db){const today=todayStr();if(db.lastDate===today)return;const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yd=yesterday.toISOString().slice(0,10);if(db.lastDate===yd)db.streak=(db.streak||0)+1;else if(db.lastDate!==today)db.streak=1;db.lastDate=today;}
+
+let sessionQueue=[],sessIdx=0,sessPhase=0,sessRatings=[],db;
+
+function loadHome(){
+  db=getDB();
+  const words=Object.values(db.words);
+  const due=words.filter(isDue);
+  const hard=words.filter(w=>(w.hardCount||0)>=2);
+  document.getElementById('s-total').textContent=words.length;
+  document.getElementById('s-due').textContent=due.length;
+  document.getElementById('s-hard').textContent=hard.length;
+  document.getElementById('s-sessions').textContent=db.sessions||0;
+  document.getElementById('streak-num').textContent=db.streak||0;
+  document.getElementById('last-session-label').textContent=db.lastDate?'last: '+db.lastDate:'';
+  document.getElementById('due-summary').textContent=due.length===0?'No words due — check back tomorrow, or add new words below.':`${due.length} word${due.length>1?'s':''} ready for review.${hard.length>0?' Includes '+hard.length+' hard word'+(hard.length>1?'s':'')+'.':''}`;
+  document.getElementById('start-btn').disabled=due.length===0;
+  renderHardList(hard);
+}
+
+function renderHardList(hard){
+  const el=document.getElementById('hard-list');
+  document.getElementById('hard-count-label').textContent=hard.length?hard.length+' words':'';
+  if(!hard.length){el.innerHTML='<div class="muted">No words flagged as hard yet.</div>';return;}
+  el.innerHTML=hard.map(w=>`<div class="word-row"><span style="font-size:15px">${w.ko}</span><span class="muted" style="margin-left:8px;font-size:13px">${w.en}</span><span class="badge badge-hard" style="margin-left:auto;margin-right:8px">${w.hardCount}x hard</span></div>`).join('');
+}
+
+function toggleWordBank(){
+  const el=document.getElementById('word-bank-list');
+  const show=el.classList.contains('hidden');
+  el.classList.toggle('hidden');
+  if(show){
+    const words=Object.values(db.words);
+    if(!words.length){el.innerHTML='<div class="muted">No words yet.</div>';return;}
+    el.innerHTML=words.map(w=>`<div class="word-row"><span style="font-size:14px">${w.ko}</span><span class="muted" style="margin-left:8px;font-size:13px">${w.en}</span><span class="muted" style="font-size:12px;margin-left:auto;margin-right:8px">${w.nextReview?'next: '+w.nextReview:'new'}</span><button class="del-btn" onclick="deleteWord('${w.ko.replace(/'/g,"\\'")}')">remove</button></div>`).join('');
+  }
+}
+
+function deleteWord(ko){db=getDB();delete db.words[ko];saveDB(db);loadHome();document.getElementById('word-bank-list').classList.add('hidden');}
+
+function addSingleWord(){
+  const ko=document.getElementById('add-ko').value.trim();
+  const en=document.getElementById('add-en').value.trim();
+  if(!ko||!en){showFeedback('Enter both Korean and meaning.');return;}
+  db=getDB();
+  if(db.words[ko]){showFeedback(ko+' already in bank.');return;}
+  db.words[ko]={ko,en,level:0,hardCount:0,nextReview:todayStr(),added:todayStr()};
+  saveDB(db);
+  document.getElementById('add-ko').value='';
+  document.getElementById('add-en').value='';
+  showFeedback(ko+' added.');
+  loadHome();
+}
+
+function addBulk(){
+  const raw=document.getElementById('bulk-input').value;
+  const lines=raw.trim().split('\n').filter(l=>l.trim());
+  db=getDB();let added=0;
+  lines.forEach(line=>{const m=line.trim().match(/^(\S+)\s*[-\u2013\u2014:\s]+\s*(.+)$/);if(!m)return;const ko=m[1].trim(),en=m[2].trim();if(!db.words[ko]){db.words[ko]={ko,en,level:0,hardCount:0,nextReview:todayStr(),added:todayStr()};added++;}});
+  saveDB(db);document.getElementById('bulk-input').value='';showFeedback(added+' words added.');toggleBulk();loadHome();
+}
+
+function toggleBulk(){const el=document.getElementById('bulk-area');const btn=document.getElementById('bulk-toggle-btn');const show=el.classList.contains('hidden');el.classList.toggle('hidden');btn.textContent=show?'hide bulk':'bulk paste';}
+function showFeedback(msg){const el=document.getElementById('add-feedback');el.textContent=msg;setTimeout(()=>{el.textContent='';},2500);}
+
+function startSession(){
+  db=getDB();
+  const due=Object.values(db.words).filter(isDue);
+  sessionQueue=due.sort((a,b)=>(b.hardCount||0)-(a.hardCount||0)).slice(0,5);
+  sessIdx=0;sessPhase=0;sessRatings=[];sessSentences=[];
+  document.getElementById('home-screen').classList.add('hidden');
+  document.getElementById('session-screen').classList.remove('hidden');
+  renderSessionPhase();
+}
+
+function renderPhaseBar(){
+  const bar=document.getElementById('phase-bar');bar.innerHTML='';
+  const total=sessionQueue.length*3,done=sessIdx*3+sessPhase;
+  for(let i=0;i<total;i++){const p=document.createElement('div');p.className='pip'+(i<done?' done':i===done?' active':'');bar.appendChild(p);}
+  document.getElementById('sess-progress').textContent=`word ${sessIdx+1} of ${sessionQueue.length}`;
+}
+
+function renderSessionPhase(){
+  const w=sessionQueue[sessIdx];
+  renderPhaseBar();
+  const el=document.getElementById('phase-content');
+  if(sessPhase===0){
+    el.innerHTML=`<div class="card"><div class="label">phase 1 — see it</div><div class="big" style="margin-top:8px">${w.ko}</div><div id="reveal-area" style="margin-top:10px"><button onclick="revealMeaning()">show meaning <kbd>space</kbd></button></div></div><div id="rate-area" class="hidden" style="margin-top:.75rem"><div class="card"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it <kbd>1</kbd></button><button onclick="rateWord('ok')">vaguely <kbd>2</kbd></button><button class="btn-hard" onclick="rateWord('hard')">forgot <kbd>3</kbd></button></div></div></div>`;
+  } else if(sessPhase===1){
+    const ctx=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en);
+    el.innerHTML=`<div class="card"><div class="label">phase 2 — use it</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${ctx}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div class="btn-row" style="margin-top:6px"><button onclick="revealUseGuidance('${w.ko.replace(/'/g,"\\'")}')">see guidance</button>${getApiKey()?`<button onclick="getAiFeedback('use','${w.ko.replace(/'/g,"\\'")}','${w.en.replace(/'/g,"\\'")}')">AI feedback <kbd>⌘↵</kbd></button>`:''}<button id="use-next" class="hidden" onclick="advancePhase()">next →</button></div><div id="use-guidance"></div><div id="use-ai-feedback"></div></div>`;
+  } else if(sessPhase===2){
+    el.innerHTML=`<div class="card"><div class="label">phase 3 — seal it</div><div style="font-size:15px;color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${w.ko}</strong> (${w.en}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${w.ko}..."></textarea><div class="btn-row" style="margin-top:8px">${getApiKey()?`<button onclick="getAiFeedback('seal','${w.ko.replace(/'/g,"\\'")}','${w.en.replace(/'/g,"\\'")}')">AI feedback <kbd>⌘↵</kbd></button>`:''}<button class="btn-full" onclick="finishWord()" style="flex:1">done →</button></div><div id="seal-ai-feedback"></div></div>`;
+  }
+}
+
+function revealMeaning(){
+  const w=sessionQueue[sessIdx];
+  document.getElementById('reveal-area').innerHTML=`<div class="answer-box"><span style="font-size:17px;font-weight:500;color:var(--teal)">${w.en}</span>${w.hardCount>0?`<div class="muted" style="margin-top:4px;font-size:12px">flagged hard ${w.hardCount}x</div>`:''}</div>`;
+  document.getElementById('rate-area').classList.remove('hidden');
+}
+
+function revealUseGuidance(ko){
+  document.getElementById('use-guidance').innerHTML=`<div class="answer-box" style="margin-top:8px"><div class="muted" style="font-size:13px;line-height:1.6">No single right answer. Did you use ${ko} naturally and in the right context? If stuck, try saying it aloud first.</div></div>`;
+  document.getElementById('use-next').classList.remove('hidden');
+}
+
+function rateWord(rating){
+  const w=sessionQueue[sessIdx];db=getDB();const word=db.words[w.ko];if(!word)return;
+  if(rating==='hard'){word.hardCount=(word.hardCount||0)+1;word.level=Math.max(0,(word.level||0)-1);}
+  else if(rating==='good'){word.level=Math.min(4,(word.level||0)+1);if(word.hardCount>0)word.hardCount--;}
+  word.nextReview=nextInterval(word,rating);
+  saveDB(db);sessRatings.push({ko:w.ko,rating});sessPhase=1;renderSessionPhase();
+}
+
+function advancePhase(){sessPhase++;if(sessPhase>2){sessPhase=0;sessIdx++;}if(sessIdx>=sessionQueue.length){endSession();return;}renderSessionPhase();}
+let sessSentences=[];
+
+function finishWord(){
+  if(sessPhase===2){
+    const ans=document.getElementById('seal-ans')?.value?.trim();
+    const w=sessionQueue[sessIdx];
+    if(ans) sessSentences.push({ko:w.ko,en:w.en,sentence:ans});
+  }
+  advancePhase();
+}
+
+function endSession(){
+  db=getDB();db.sessions=(db.sessions||0)+1;updateStreak(db);saveDB(db);
+  document.getElementById('session-screen').classList.add('hidden');
+  document.getElementById('done-screen').classList.remove('hidden');
+  const good=sessRatings.filter(r=>r.rating==='good').length;
+  const ok=sessRatings.filter(r=>r.rating==='ok').length;
+  const hard=sessRatings.filter(r=>r.rating==='hard').length;
+  document.getElementById('done-msg').textContent=`${sessionQueue.length}개 단어 완료. Hard words come back sooner — you'll see them again before the rest.`;
+  document.getElementById('done-stats').innerHTML=`<div class="stat"><div class="n">${good}</div><div class="l">knew it</div></div><div class="stat"><div class="n">${ok}</div><div class="l">vaguely</div></div><div class="stat"><div class="n">${hard}</div><div class="l">hard</div></div><div class="stat"><div class="n">${db.sessions}</div><div class="l">total sessions</div></div>`;
+  const sentEl=document.getElementById('story-sentences');
+  sentEl.innerHTML=sessSentences.map(s=>`<div class="sentence-chip"><div class="chip-word">${s.ko} — ${s.en}</div>${s.sentence}</div>`).join('');
+  generateStory();
+}
+
+function endSessionEarly(){sessSentences=[];endSession();}
+function goHome(){
+  document.getElementById('done-screen').classList.add('hidden');
+  document.getElementById('home-screen').classList.remove('hidden');
+  loadHome();
+}
+
+async function generateStory(){
+  const out=document.getElementById('story-content');
+  const key=getApiKey();
+  if(!key||sessSentences.length===0){
+    if(!key) out.innerHTML=`<div class="muted" style="font-size:13px">Add an API key in the ··· menu to generate a story.</div>`;
+    else document.getElementById('story-card').classList.add('hidden');
+    return;
+  }
+  out.innerHTML=`<div class="ai-loading">concocting something ridiculous...</div>`;
+  const wordList=sessSentences.map(s=>`- "${s.sentence}" (used word: ${s.ko}, ${s.en})`).join('\n');
+  const prompt=`You are a Korean creative writing assistant with a talent for absurd, deadpan comedy. A learner wrote these sentences during vocabulary practice:\n\n${wordList}\n\nWeave them into a short funny/absurd story in Korean (4-8 sentences). The tone should be comedic — unexpected situations, dry humor, surreal logic, bizarre consequences. Rules:\n1. Include each of the learner's sentences naturally — you may lightly adjust grammar but keep their words\n2. Bold each target vocabulary word using **word** markdown\n3. Commit fully to the absurdity — the funnier the better\n4. After the Korean story, add a natural English translation starting with "---"\n\nFormat:\n[Korean story]\n---\n[English translation]`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    if(data.error){out.innerHTML=`<div class="ai-loading">Error: ${data.error.message}</div>`;return;}
+    const text=(data.content?.[0]?.text||'').trim();
+    const parts=text.split(/\n---\n/);
+    const korean=parts[0]?.trim()||'';
+    const english=parts[1]?.trim()||'';
+    const koHtml=korean.replace(/\*\*(.+?)\*\*/g,'<span class="story-word">$1</span>').replace(/\n/g,'<br>');
+    const enHtml=english.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    out.innerHTML=`<div class="story-text">${koHtml}</div>${enHtml?`<div class="story-translation">${enHtml}</div>`:''}`;
+  }catch(e){
+    out.innerHTML=`<div class="ai-loading">Could not reach API. Check your key and connection.</div>`;
+  }
+}
+
+function exportData(){
+  const db=getDB();
+  const json=JSON.stringify(db,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toISOString().slice(0,10);
+  a.href=url;a.download=`korean-srs-${date}.json`;
+  a.click();URL.revokeObjectURL(url);
+  showSyncFeedback('Progress exported.');
+}
+
+function importData(e){
+  const file=e.target.files[0];
+  if(!file){return;}
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const imported=JSON.parse(ev.target.result);
+      if(!imported.words){showSyncFeedback('Invalid file — no word bank found.');return;}
+      const existing=getDB();
+      const merged={...existing};
+      merged.words={...existing.words};
+      let added=0,updated=0;
+      Object.values(imported.words).forEach(w=>{
+        if(!merged.words[w.ko]){merged.words[w.ko]=w;added++;}
+        else{
+          const ex=merged.words[w.ko];
+          if((w.level||0)>(ex.level||0)||(w.hardCount||0)>(ex.hardCount||0)){merged.words[w.ko]=w;updated++;}
+        }
+      });
+      merged.sessions=Math.max(existing.sessions||0,imported.sessions||0);
+      merged.streak=Math.max(existing.streak||0,imported.streak||0);
+      if(imported.lastDate>existing.lastDate) merged.lastDate=imported.lastDate;
+      saveDB(merged);
+      loadHome();
+      showSyncFeedback(`Imported: ${added} new, ${updated} updated.`);
+    }catch(err){showSyncFeedback('Could not read file.');}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+function showSyncFeedback(msg){
+  const el=document.getElementById('sync-feedback');
+  if(!el) return;
+  el.textContent=msg;
+  setTimeout(()=>{el.textContent='';},3000);
+}
+
+function toggleMenu(){
+  const m=document.getElementById('dropdown-menu');
+  m.classList.toggle('hidden');
+}
+
+document.addEventListener('keydown',function(e){
+  const inSession=!document.getElementById('session-screen').classList.contains('hidden');
+  if(!inSession) return;
+  const tag=document.activeElement.tagName;
+  const inText=tag==='TEXTAREA'||tag==='INPUT';
+
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){
+    e.preventDefault();
+    const w=sessionQueue[sessIdx];
+    if(!w) return;
+    const ko=w.ko,en=w.en;
+    if(sessPhase===1) getAiFeedback('use',ko,en);
+    else if(sessPhase===2) getAiFeedback('seal',ko,en);
+    return;
+  }
+
+  if(inText) return;
+
+  if(e.key===' '||e.code==='Space'){
+    e.preventDefault();
+    const revealBtn=document.querySelector('#reveal-area button');
+    if(revealBtn) revealBtn.click();
+    return;
+  }
+
+  if(e.key==='1'){
+    const rateArea=document.getElementById('rate-area');
+    if(rateArea&&!rateArea.classList.contains('hidden')) rateWord('good');
+  } else if(e.key==='2'){
+    const rateArea=document.getElementById('rate-area');
+    if(rateArea&&!rateArea.classList.contains('hidden')) rateWord('ok');
+  } else if(e.key==='3'){
+    const rateArea=document.getElementById('rate-area');
+    if(rateArea&&!rateArea.classList.contains('hidden')) rateWord('hard');
+  } else if(e.key==='Enter'){
+    const nextBtn=document.getElementById('use-next');
+    if(nextBtn&&!nextBtn.classList.contains('hidden')){nextBtn.click();return;}
+    if(sessPhase===2){finishWord();}
+  }
+});
+
+document.addEventListener('click',function(e){
+  const menu=document.getElementById('dropdown-menu');
+  const btn=document.getElementById('menu-btn');
+  if(!menu||!btn) return;
+  if(!menu.contains(e.target)&&e.target!==btn){menu.classList.add('hidden');}
+});
+
+function getApiKey(){return localStorage.getItem('kr_srs_apikey')||'';}
+function saveApiKey(){
+  const val=document.getElementById('api-key-input').value.trim();
+  if(!val){document.getElementById('api-key-status').textContent='Enter a key first.';return;}
+  localStorage.setItem('kr_srs_apikey',val);
+  document.getElementById('api-key-status').textContent='Saved.';
+  document.getElementById('api-key-input').value='';
+  setTimeout(()=>{const el=document.getElementById('api-key-status');if(el)el.textContent='';},2000);
+}
+
+async function getAiFeedback(phase,ko,en){
+  const key=getApiKey();
+  if(!key){return;}
+  const ansId=phase==='use'?'use-ans':'seal-ans';
+  const outId=phase==='use'?'use-ai-feedback':'seal-ai-feedback';
+  const answer=document.getElementById(ansId)?.value?.trim();
+  if(!answer){document.getElementById(outId).innerHTML=`<div class="ai-loading">Write something first.</div>`;return;}
+  document.getElementById(outId).innerHTML=`<div class="ai-loading">evaluating...</div>`;
+  const prompt=`You are a Korean language tutor for an upper-intermediate learner. The target word is "${ko}" (${en}).\n\nThe learner wrote this Korean sentence:\n"${answer}"\n\nEvaluate in 3 parts, be concise:\n1. SCORE: one of — great / good / needs work\n2. FEEDBACK: 1-2 sentences on grammar, naturalness, or word usage. Be specific.\n3. SUGGESTION: If score is not "great", rewrite the sentence more naturally (Korean only, then translation in parentheses). If great, skip this.\n\nReply in this exact format:\nSCORE: [great/good/needs work]\nFEEDBACK: [your feedback]\nSUGGESTION: [improved sentence (translation)] or none`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    if(data.error){document.getElementById(outId).innerHTML=`<div class="ai-loading">Error: ${data.error.message}</div>`;return;}
+    const text=data.content?.[0]?.text||'';
+    const scoreM=text.match(/SCORE:\s*(.+)/i);
+    const feedM=text.match(/FEEDBACK:\s*(.+)/i);
+    const suggM=text.match(/SUGGESTION:\s*([\s\S]+?)(?:\n\n|$)/i);
+    const score=(scoreM?.[1]||'').trim().toLowerCase();
+    const feed=(feedM?.[1]||'').trim();
+    const sugg=(suggM?.[1]||'').trim();
+    const scoreClass=score.includes('great')?'score-great':score.includes('needs')?'score-revise':'score-ok';
+    const scoreLabel=score.includes('great')?'great':score.includes('needs')?'needs work':'good';
+    let html=`<div class="ai-feedback-box"><div class="fb-label">AI feedback</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div style="color:var(--text)">${feed}</div>`;
+    if(sugg&&sugg.toLowerCase()!=='none')html+=`<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:13px"><span style="font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;color:var(--text-secondary)">suggestion</span><span style="color:var(--text)">${sugg}</span></div>`;
+    html+=`</div>`;
+    document.getElementById(outId).innerHTML=html;
+    if(phase==='use')document.getElementById('use-next').classList.remove('hidden');
+  }catch(e){
+    document.getElementById(outId).innerHTML=`<div class="ai-loading">Could not reach API. Check your key and connection.</div>`;
+  }
+}
+
+loadHome();
+</script>
+</body>
+</html>

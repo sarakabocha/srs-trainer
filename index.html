@@ -180,21 +180,21 @@
   .big { font-size: 34px; font-weight: 500; color: var(--text); line-height: 1.2; }
   #add-feedback { font-size: 13px; color: var(--teal); margin-top: 6px; min-height: 18px; }
   .ai-feedback-box { border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: .875rem 1rem; margin-top: .75rem; font-size: 13px; line-height: 1.7; color: var(--text); }
-.ai-feedback-box .fb-label { font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; }
-.fb-score { display: inline-block; font-size: 13px; font-weight: 500; padding: 2px 10px; border-radius: var(--radius-md); margin-bottom: 8px; }
-.score-great { background: var(--teal-light); color: var(--teal-dark); }
-.score-ok { background: #FAEEDA; color: #633806; }
-.score-revise { background: var(--red-light); color: var(--red-dark); }
-.ai-loading { color: var(--text-secondary); font-size: 13px; margin-top: .75rem; font-style: italic; }
-.api-key-row { display: flex; gap: 8px; margin-top: 8px; }
-.api-key-row input { flex: 1; font-size: 13px; padding: 7px 10px; }
-.divider { height: 0.5px; background: var(--border); margin: 6px 0; }
-kbd { display: inline-block; font-family: var(--font-ui); font-size: 10px; padding: 1px 5px; border-radius: 4px; border: 0.5px solid var(--border-hover); color: var(--text-secondary); background: var(--bg-secondary); margin-left: 4px; vertical-align: middle; }
-.story-text { font-size: 16px; line-height: 1.9; color: var(--text); }
-.story-translation { font-size: 13px; line-height: 1.8; color: var(--text-secondary); margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
-.story-word { font-weight: 500; color: var(--teal); }
-.sentence-chip { font-size: 13px; color: var(--text-secondary); padding: 6px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 6px; line-height: 1.5; }
-.sentence-chip .chip-word { font-weight: 500; color: var(--text); font-size: 12px; margin-bottom: 2px; }
+  .ai-feedback-box .fb-label { font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; }
+  .fb-score { display: inline-block; font-size: 13px; font-weight: 500; padding: 2px 10px; border-radius: var(--radius-md); margin-bottom: 8px; }
+  .score-great { background: var(--teal-light); color: var(--teal-dark); }
+  .score-ok { background: #FAEEDA; color: #633806; }
+  .score-revise { background: var(--red-light); color: var(--red-dark); }
+  .ai-loading { color: var(--text-secondary); font-size: 13px; margin-top: .75rem; font-style: italic; }
+  .api-key-row { display: flex; gap: 8px; margin-top: 8px; }
+  .api-key-row input { flex: 1; font-size: 13px; padding: 7px 10px; }
+  .divider { height: 0.5px; background: var(--border); margin: 6px 0; }
+  kbd { display: inline-block; font-family: var(--font-ui); font-size: 10px; padding: 1px 5px; border-radius: 4px; border: 0.5px solid var(--border-hover); color: var(--text-secondary); background: var(--bg-secondary); margin-left: 4px; vertical-align: middle; }
+  .story-text { font-size: 16px; line-height: 1.9; color: var(--text); }
+  .story-translation { font-size: 13px; line-height: 1.8; color: var(--text-secondary); margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
+  .story-word { font-weight: 500; color: var(--teal); }
+  .sentence-chip { font-size: 13px; color: var(--text-secondary); padding: 6px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 6px; line-height: 1.5; }
+  .sentence-chip .chip-word { font-weight: 500; color: var(--text); font-size: 12px; margin-bottom: 2px; }
 </style>
 </head>
 <body>
@@ -222,7 +222,7 @@ kbd { display: inline-block; font-family: var(--font-ui); font-size: 10px; paddi
     </div>
   </div>
   <div id="sync-feedback" style="font-size:13px;color:var(--teal);min-height:18px;margin-bottom:0.5rem;text-align:right"></div>
-  
+
   <div id="home-screen">
     <div class="streak-row">
       <div class="streak-flame" id="streak-num">0</div>
@@ -351,26 +351,54 @@ function toggleWordBank(){
 
 function deleteWord(ko){db=getDB();delete db.words[ko];saveDB(db);loadHome();document.getElementById('word-bank-list').classList.add('hidden');}
 
+function similar(a,b){
+  if(a===b) return true;
+  if(a.includes(b)||b.includes(a)) return true;
+  if(Math.abs(a.length-b.length)>3) return false;
+  let diff=0;const len=Math.max(a.length,b.length);
+  for(let i=0;i<len;i++){if(a[i]!==b[i])diff++;}
+  return diff<=1;
+}
+
+function findSimilar(ko){
+  const db=getDB();
+  return Object.values(db.words).filter(w=>w.ko!==ko&&similar(w.ko,ko));
+}
+
 function addSingleWord(){
   const ko=document.getElementById('add-ko').value.trim();
   const en=document.getElementById('add-en').value.trim();
   if(!ko||!en){showFeedback('Enter both Korean and meaning.');return;}
   db=getDB();
   if(db.words[ko]){showFeedback(ko+' already in bank.');return;}
+  const matches=findSimilar(ko);
+  if(matches.length){
+    showFeedback(`Added — similar word already exists: ${matches.map(w=>w.ko).join(', ')}`);
+  } else {
+    showFeedback(ko+' added.');
+  }
   db.words[ko]={ko,en,level:0,hardCount:0,nextReview:todayStr(),added:todayStr()};
   saveDB(db);
   document.getElementById('add-ko').value='';
   document.getElementById('add-en').value='';
-  showFeedback(ko+' added.');
   loadHome();
 }
 
 function addBulk(){
   const raw=document.getElementById('bulk-input').value;
   const lines=raw.trim().split('\n').filter(l=>l.trim());
-  db=getDB();let added=0;
-  lines.forEach(line=>{const m=line.trim().match(/^(\S+)\s*[-\u2013\u2014:\s]+\s*(.+)$/);if(!m)return;const ko=m[1].trim(),en=m[2].trim();if(!db.words[ko]){db.words[ko]={ko,en,level:0,hardCount:0,nextReview:todayStr(),added:todayStr()};added++;}});
-  saveDB(db);document.getElementById('bulk-input').value='';showFeedback(added+' words added.');toggleBulk();loadHome();
+  db=getDB();let added=0,dupes=[];
+  lines.forEach(line=>{
+    const m=line.trim().match(/^(\S+)\s*[-\u2013\u2014:\s]+\s*(.+)$/);if(!m)return;
+    const ko=m[1].trim(),en=m[2].trim();
+    if(db.words[ko]){dupes.push(ko);return;}
+    db.words[ko]={ko,en,level:0,hardCount:0,nextReview:todayStr(),added:todayStr()};added++;
+  });
+  saveDB(db);
+  document.getElementById('bulk-input').value='';
+  const msg=added+' added'+(dupes.length?` — ${dupes.length} skipped (already in bank): ${dupes.join(', ')}`:'.')  ;
+  showFeedback(msg);
+  toggleBulk();loadHome();
 }
 
 function toggleBulk(){const el=document.getElementById('bulk-area');const btn=document.getElementById('bulk-toggle-btn');const show=el.classList.contains('hidden');el.classList.toggle('hidden');btn.textContent=show?'hide bulk':'bulk paste';}
@@ -429,7 +457,6 @@ function rateWord(rating){
 }
 
 function advancePhase(){sessPhase++;if(sessPhase>2){sessPhase=0;sessIdx++;}if(sessIdx>=sessionQueue.length){endSession();return;}renderSessionPhase();}
-
 let sessSentences=[];
 
 function finishWord(){

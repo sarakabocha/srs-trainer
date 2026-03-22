@@ -258,6 +258,10 @@
         <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">filter by theme</div>
         <div id="theme-filter-btns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:12px;color:var(--text-secondary)">words per session</span>
+        <div id="session-size-btns" style="display:flex;gap:4px;margin-left:auto"></div>
+      </div>
       <button class="btn-full" id="start-btn" onclick="startSession()">start review</button>
     </div>
     <div class="card" id="theme-card">
@@ -363,6 +367,8 @@ function nextInterval(w,rating){const lvl=Math.max(0,Math.min((w.level||0),4));c
 function updateStreak(db){const today=todayStr();if(db.lastDate===today)return;const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yd=yesterday.toISOString().slice(0,10);if(db.lastDate===yd)db.streak=(db.streak||0)+1;else if(db.lastDate!==today)db.streak=1;db.lastDate=today;}
 
 let activeThemeFilter=null;
+const SESSION_SIZES=[5,10,15,0];
+let sessionSize=5;
 let sessionQueue=[],sessIdx=0,sessPhase=0,sessRatings=[],db;
 
 function loadHome(){
@@ -381,8 +387,24 @@ function loadHome(){
     ?activeThemeFilter?`No words due in "${activeThemeFilter}" — try another theme or check back tomorrow.`:'No words due — check back tomorrow, or add new words below.'
     :`${filteredDue.length} word${filteredDue.length>1?'s':''} ready for review.${hard.length>0&&!activeThemeFilter?' Includes '+hard.length+' hard word'+(hard.length>1?'s':'')+'.':''}`;
   document.getElementById('start-btn').disabled=filteredDue.length===0;
+  renderSessionSizes(filteredDue.length);
   renderHardList(hard);
   renderThemes();
+}
+
+function renderSessionSizes(dueCount){
+  const el=document.getElementById('session-size-btns');
+  if(!el)return;
+  el.innerHTML=SESSION_SIZES.map(n=>{
+    const label=n===0?'all':String(n);
+    const active=(sessionSize===n)||(n===0&&sessionSize>=dueCount);
+    return`<button class="theme-pill${active?' active':''}" onclick="setSessionSize(${n})" style="padding:3px 10px;font-size:12px">${label}</button>`;
+  }).join('');
+}
+
+function setSessionSize(n){
+  sessionSize=n;
+  loadHome();
 }
 
 function toggleThemeCard(){
@@ -544,7 +566,8 @@ function startSession(){
   const filtered=activeThemeFilter?due.filter(w=>w.theme===activeThemeFilter):due;
   const hard=filtered.filter(w=>(w.hardCount||0)>0).sort(()=>Math.random()-0.5);
   const normal=filtered.filter(w=>(w.hardCount||0)===0).sort(()=>Math.random()-0.5);
-  sessionQueue=[...hard,...normal].slice(0,5);
+  const limit=sessionSize===0?Infinity:sessionSize;
+  sessionQueue=[...hard,...normal].slice(0,limit);
   sessIdx=0;sessPhase=0;sessRatings=[];sessSentences=[];sessionContexts=[];
   document.getElementById('home-screen').classList.add('hidden');
   document.getElementById('session-screen').classList.remove('hidden');

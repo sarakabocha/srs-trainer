@@ -58,6 +58,7 @@
     display: flex;
     justify-content: center;
     padding: 2rem 1rem;
+    overflow-y: scroll;
   }
 
   .wrap { width: 100%; max-width: 560px; }
@@ -203,8 +204,7 @@
   .muted { font-size: 13px; color: var(--text-secondary); }
 
   .big { font-size: 34px; font-weight: 500; color: var(--text); line-height: 1.2; }
-  .flashcard-word { font-size: 52px; font-weight: 400; color: var(--text); line-height: 1.2; text-align: center; padding: 2.5rem 1rem; animation: wordReveal .35s ease-out; }
-  @keyframes wordReveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .flashcard-word { font-size: 34px; font-weight: 500; color: var(--text); line-height: 1.2; margin: 8px 0 1.25rem; }
   #add-feedback { font-size: 13px; color: var(--teal); margin-top: 6px; min-height: 18px; }
   .ai-feedback-box { border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: .875rem 1rem; margin-top: .75rem; font-size: 13px; line-height: 1.7; color: var(--text); }
   .ai-feedback-box .fb-label { font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; }
@@ -216,7 +216,7 @@
   .api-key-row { display: flex; gap: 8px; margin-top: 8px; }
   .api-key-row input { flex: 1; font-size: 13px; padding: 7px 10px; }
   .divider { height: 0.5px; background: var(--border); margin: 6px 0; }
-  kbd { display: inline-block; font-family: var(--font-ui); font-size: 10px; padding: 1px 5px; border-radius: 4px; border: 0.5px solid var(--border-hover); color: var(--text-secondary); background: var(--bg-secondary); margin-left: 4px; vertical-align: middle; }
+  kbd { display: inline-flex; align-items: center; justify-content: center; font-family: var(--font-ui); font-size: 10px; padding: 2px 5px; border-radius: 4px; border: 0.5px solid var(--border-hover); color: var(--text-secondary); background: var(--bg-secondary); margin-left: 4px; vertical-align: middle; line-height: 1; }
   .story-text { font-size: 16px; line-height: 1.9; color: var(--text); }
   .story-translation { font-size: 13px; line-height: 1.8; color: var(--text-secondary); margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
   .story-word { font-weight: 500; color: var(--teal); }
@@ -237,12 +237,29 @@
   .mic-btn.correct { border-color: #1D9E75; background: #E1F5EE; }
   .mic-btn.wrong { border-color: #D85A30; background: #FAECE7; }
   @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  .type-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--font-ui);
+    font-size: 20px;
+    color: var(--text);
+    text-align: center;
+    width: 100%;
+    padding: 8px 0;
+    caret-color: var(--teal);
+  }
+  .type-input::placeholder { color: var(--border-hover); }
+  .type-input-wrap {
+    margin: 0 auto;
+    max-width: 280px;
+  }
 
   @media (max-width: 480px) {
     body { padding: 1rem 0.75rem; }
     .app-header { margin-bottom: 1rem; }
     .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-    .flashcard-word { font-size: 42px; padding: 2rem 0.75rem; }
+    .flashcard-word { font-size: 30px; }
     .card { padding: 1rem; }
     .section-head.clickable { margin: -1rem; padding: 1rem; margin-bottom: 0; }
     button { padding: 10px 14px; -webkit-tap-highlight-color: transparent; }
@@ -251,7 +268,7 @@
     .mic-btn { width: 80px; height: 80px; touch-action: manipulation; }
     .btn-row { gap: 6px; }
     textarea { font-size: 16px; }
-    input[type=text] { font-size: 16px; }
+    input[type=text]:not(.type-input) { font-size: 16px; }
     .theme-pill { padding: 6px 12px; }
     .word-row {
       padding: 10px 0;
@@ -490,6 +507,7 @@ function setSessionSize(n){
 
 const SVG_CHEVRON_RIGHT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
 const SVG_CHEVRON_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+const SVG_ARROW_RIGHT='<svg style="width:14px;height:14px;vertical-align:-2px;margin-left:2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 function toggleSection(bodyId,iconId,cardId){
   const body=document.getElementById(bodyId);
   const icon=document.getElementById(iconId);
@@ -719,7 +737,7 @@ function renderSessionPhase(){
   if(sessPhase===0){
     const kbdHints=isMobile?'':'<kbd>space</kbd>';
     const kbdR=isMobile?['','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>'];
-    el.innerHTML=`<div class="card" style="text-align:center"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div class="flashcard-word">${esc(w.ko)}</div></div><div class="session-actions"><div id="reveal-area"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div><div id="rate-area" class="hidden" style="margin-top:.75rem"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div class="flashcard-word">${esc(w.ko)}</div><div id="reveal-area"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div></div><div id="rate-area" class="hidden" style="margin-top:.75rem"><div class="card"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div>`;
   } else if(sessPhase===1){
     const hasSpeech=('webkitSpeechRecognition' in window||'SpeechRecognition' in window);
     el.innerHTML=`<div class="card">
@@ -734,22 +752,29 @@ function renderSessionPhase(){
         <button class="mic-btn" id="mic-btn" onclick="startVoice(${escJS(w.ko)})">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary)"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
         </button>
-        <div id="voice-status" style="text-align:center;font-size:13px;color:var(--text-secondary);min-height:20px;margin-bottom:0.75rem">tap mic to speak</div>
-        <div id="voice-result" style="min-height:40px"></div>`
-        :`<div class="answer-box" style="text-align:center;margin-top:1rem"><div class="muted" style="font-size:13px">Speech recognition not supported in this browser. Try Chrome or Edge.</div></div>`}
+        <div id="voice-status" style="text-align:center;font-size:13px;color:var(--text-secondary);min-height:20px;margin-bottom:0.75rem">tap mic or type below</div>`
+        :''}
+        <div class="type-input-wrap"><input class="type-input" id="type-ans" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>
+        <div id="type-result" style="min-height:20px;margin-top:0.5rem"></div>
       </div>
       <div class="session-actions" style="display:flex;justify-content:flex-end">
-        <button onclick="nextWord()" style="font-size:13px">skip →</button>
+        <button onclick="nextWord()" style="font-size:13px">skip ${SVG_ARROW_RIGHT}</button>
       </div>
     </div>`;
+    setTimeout(()=>{
+      const ti=document.getElementById('type-ans');
+      if(ti) ti.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){e.preventDefault();checkTypedAnswer(w.ko);}
+      });
+    },50);
   } else if(sessPhase===2){
     const ctx=sessionContexts[sessIdx]||(sessionContexts[sessIdx]=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en));
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">AI feedback${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-guidance"></div><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row" style="margin-top:0"><button onclick="revealUseGuidance(${escJS(w.ko)})">see guidance</button>${aiFbBtn}<button id="use-skip" onclick="nextWord()" style="margin-left:auto">skip →</button></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-guidance"></div><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row"><button onclick="revealUseGuidance(${escJS(w.ko)})">see guidance</button>${aiFbBtn}<button id="use-skip" onclick="nextWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('use-ans')?.focus(),50);
   } else if(sessPhase===3){
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('seal',${escJS(w.ko)},${escJS(w.en)})">AI feedback${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:15px;color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div id="seal-ai-feedback"></div></div><div class="session-actions"><div class="btn-row" style="margin-top:0">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip →</button></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:15px;color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div id="seal-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('seal-ans')?.focus(),50);
   }
 }
@@ -1056,7 +1081,7 @@ async function getAiFeedback(phase,ko,en){
     html+=`</div>`;
     document.getElementById(outId).innerHTML=html;
     const skipBtn=document.getElementById(phase==='use'?'use-skip':'seal-skip');
-    if(skipBtn) skipBtn.textContent='next →';
+    if(skipBtn) skipBtn.innerHTML='next '+SVG_ARROW_RIGHT;
   }catch(e){
     document.getElementById(outId).innerHTML=`<div class="ai-loading">Could not reach API. Check your key and connection.</div>`;
   }
@@ -1071,7 +1096,7 @@ function resetMic(){
   const micBtn=document.getElementById('mic-btn');
   const status=document.getElementById('voice-status');
   if(micBtn){micBtn.className='mic-btn';micBtn.innerHTML=MIC_ICON;micBtn.disabled=false;}
-  if(status) status.textContent='tap mic to speak';
+  if(status) status.textContent='tap mic or type below';
 }
 
 function startVoice(expectedKo){
@@ -1085,39 +1110,31 @@ function startVoice(expectedKo){
   activeRecognition=rec;
   const micBtn=document.getElementById('mic-btn');
   const status=document.getElementById('voice-status');
-  const result=document.getElementById('voice-result');
+  const input=document.getElementById('type-ans');
+  const typeResult=document.getElementById('type-result');
   if(micBtn){micBtn.className='mic-btn listening';micBtn.innerHTML=MIC_ICON_ACTIVE;}
   if(status) status.textContent='listening... (tap mic to cancel)';
-  if(result) result.innerHTML='';
   rec.onresult=function(e){
     const alternatives=Array.from(e.results[0]).map(r=>r.transcript.trim());
     const heard=alternatives[0];
     const correct=alternatives.some(a=>normalize(a)===normalize(expectedKo));
     activeRecognition=null;
     if(micBtn){micBtn.className='mic-btn';micBtn.innerHTML=MIC_ICON;}
-    if(status) status.textContent='';
+    if(input){input.value=heard;input.disabled=true;}
     if(correct){
-      if(result) result.innerHTML=`
-        <div class="answer-box" style="text-align:center">
-          <div style="font-size:22px;font-weight:500;color:var(--teal);margin-bottom:8px">${esc(heard)}</div>
-          <button onclick="advancePhase()" style="border-color:var(--teal);color:var(--teal)">correct →</button>
-        </div>`;
+      if(input) input.style.color='var(--teal)';
+      if(status) status.textContent='';
+      if(typeResult) typeResult.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="advancePhase()" style="border-color:var(--teal);color:var(--teal)">correct →</button></div>`;
     } else {
-      if(result) result.innerHTML=`
-        <div class="answer-box" style="text-align:center">
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">you said</div>
-          <div style="font-size:22px;font-weight:500;color:var(--text);margin-bottom:8px">${esc(heard)}</div>
-          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-            <button onclick="startVoice(${escJS(expectedKo)})">retry</button>
-            <button onclick="giveUpVoice(${escJS(expectedKo)})">give up</button>
-          </div>
-        </div>`;
+      if(input) input.style.color='var(--text)';
+      if(status) status.textContent='not quite';
+      if(typeResult) typeResult.innerHTML=`<div style="text-align:center;display:flex;gap:8px;justify-content:center;margin-top:0.5rem"><button onclick="retryVoice(${escJS(expectedKo)})">retry</button><button onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
     }
   };
   rec.onerror=function(e){
     activeRecognition=null;
     resetMic();
-    if(status) status.textContent=e.error==='not-allowed'?'microphone access denied':e.error==='no-speech'?'no speech — try again':'error: '+e.error;
+    if(status) status.textContent=e.error==='not-allowed'?'microphone access denied':e.error==='no-speech'?'no speech — try again':'tap mic or type below';
   };
   rec.onend=function(){
     if(activeRecognition===rec) activeRecognition=null;
@@ -1127,17 +1144,44 @@ function startVoice(expectedKo){
   rec.start();
 }
 
-function giveUpVoice(expectedKo){
-  const result=document.getElementById('voice-result');
-  if(result) result.innerHTML=`
-    <div class="answer-box" style="text-align:center">
-      <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px">the answer was</div>
-      <div style="font-size:26px;font-weight:500;color:var(--teal);margin-bottom:12px">${esc(expectedKo)}</div>
-      <button onclick="advancePhase()">next →</button>
-    </div>`;
+function retryVoice(expectedKo){
+  const input=document.getElementById('type-ans');
+  const typeResult=document.getElementById('type-result');
+  const status=document.getElementById('voice-status');
+  if(input){input.value='';input.disabled=false;input.style.color='var(--text)';}
+  if(typeResult) typeResult.innerHTML='';
+  if(status) status.textContent='tap mic or type below';
+  startVoice(expectedKo);
 }
 
 function normalize(s){return s.replace(/\s+/g,'').replace(/[.,!?~]/g,'').toLowerCase();}
+
+function checkTypedAnswer(expectedKo){
+  const input=document.getElementById('type-ans');
+  const result=document.getElementById('type-result');
+  const status=document.getElementById('voice-status');
+  if(!input||!result) return;
+  const val=input.value.trim();
+  if(!val) return;
+  if(status) status.textContent='';
+  const correct=normalize(val)===normalize(expectedKo);
+  if(correct){
+    input.disabled=true;
+    input.style.color='var(--teal)';
+    result.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="advancePhase()" style="border-color:var(--teal);color:var(--teal)">correct →</button></div>`;
+  } else {
+    input.style.color='var(--red)';
+    result.innerHTML=`<div style="text-align:center;font-size:13px;color:var(--text-secondary);margin-top:4px">not quite — try again or <button class="del-btn" onclick="giveUpTyped(${escJS(expectedKo)})" style="font-size:13px;color:var(--text-secondary);text-decoration:underline;padding:0">give up</button></div>`;
+    setTimeout(()=>{input.style.color='var(--text)';},600);
+  }
+}
+
+function giveUpTyped(expectedKo){
+  const input=document.getElementById('type-ans');
+  const result=document.getElementById('type-result');
+  if(input){input.value=expectedKo;input.disabled=true;input.style.color='var(--teal)';}
+  if(result) result.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="advancePhase()">next →</button></div>`;
+}
 
 loadHome();
 </script>

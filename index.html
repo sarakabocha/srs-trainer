@@ -160,11 +160,23 @@
   .badge-hard { background: var(--red-light); color: var(--red-dark); }
 
   .word-row {
-    display: flex; align-items: center;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto auto auto;
+    align-items: center;
+    gap: 0 8px;
     padding: 8px 0;
     border-bottom: 0.5px solid var(--border);
   }
   .word-row:last-child { border-bottom: none; }
+  .hard-row {
+    display: flex; align-items: center;
+    padding: 8px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .hard-row:last-child { border-bottom: none; }
+  .wb-ko { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wb-en { font-size: 13px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .wb-date { font-size: 12px; color: var(--text-secondary); white-space: nowrap; }
   .del-btn {
     font-size: 12px; color: var(--text-secondary);
     background: none; border: none;
@@ -172,18 +184,27 @@
     margin-left: auto;
   }
   .del-btn:hover { color: var(--red); background: none; }
-  .toggle-btn {
-    font-size: 12px; color: var(--text-secondary);
-    background: none; border: none;
-    cursor: pointer; padding: 2px 6px;
+  .toggle-icon {
+    color: var(--text-secondary);
+    display: flex; align-items: center;
   }
-  .toggle-btn:hover { color: var(--text); background: none; }
+  .toggle-icon svg { width: 18px; height: 18px; }
 
   .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+  .card.collapsed { padding-bottom: 0; }
+  .section-head.clickable {
+    cursor: pointer; -webkit-user-select: none; user-select: none;
+    margin: -1.25rem; padding: 1.25rem;
+    margin-bottom: 0;
+  }
+  .section-head.clickable:hover .label { color: var(--text); }
+  .section-head.clickable:hover .toggle-icon { color: var(--text); }
   .hidden { display: none; }
   .muted { font-size: 13px; color: var(--text-secondary); }
 
   .big { font-size: 34px; font-weight: 500; color: var(--text); line-height: 1.2; }
+  .flashcard-word { font-size: 52px; font-weight: 400; color: var(--text); line-height: 1.2; text-align: center; padding: 2.5rem 1rem; animation: wordReveal .35s ease-out; }
+  @keyframes wordReveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   #add-feedback { font-size: 13px; color: var(--teal); margin-top: 6px; min-height: 18px; }
   .ai-feedback-box { border: 0.5px solid var(--border); border-radius: var(--radius-md); padding: .875rem 1rem; margin-top: .75rem; font-size: 13px; line-height: 1.7; color: var(--text); }
   .ai-feedback-box .fb-label { font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 6px; }
@@ -216,6 +237,63 @@
   .mic-btn.correct { border-color: #1D9E75; background: #E1F5EE; }
   .mic-btn.wrong { border-color: #D85A30; background: #FAECE7; }
   @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+
+  @media (max-width: 480px) {
+    body { padding: 1rem 0.75rem; }
+    .app-header { margin-bottom: 1rem; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .flashcard-word { font-size: 42px; padding: 2rem 0.75rem; }
+    .card { padding: 1rem; }
+    .section-head.clickable { margin: -1rem; padding: 1rem; margin-bottom: 0; }
+    button { padding: 10px 14px; -webkit-tap-highlight-color: transparent; }
+    button:active { transform: scale(0.97); }
+    .rate-row button { padding: 12px 6px; font-size: 14px; }
+    .mic-btn { width: 80px; height: 80px; touch-action: manipulation; }
+    .btn-row { gap: 6px; }
+    textarea { font-size: 16px; }
+    input[type=text] { font-size: 16px; }
+    .theme-pill { padding: 6px 12px; }
+    .word-row {
+      padding: 10px 0;
+      grid-template-columns: 1fr auto auto;
+      grid-template-rows: auto auto;
+    }
+    .wb-ko { grid-column: 1; }
+    .wb-en { grid-column: 1 / -1; margin-top: 2px; }
+    .wb-date { display: none; }
+
+    .sess-header {
+      position: sticky;
+      top: -1rem;
+      z-index: 10;
+      background: var(--bg-tertiary);
+      padding-top: 0.5rem;
+      padding-bottom: 0.25rem;
+    }
+
+    #session-screen {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 2rem);
+      min-height: calc(100dvh - 2rem);
+    }
+    #phase-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    #phase-content > .card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .session-body { flex: 1; }
+    .session-actions {
+      padding-top: 0.75rem;
+      margin-top: auto;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+    }
+  }
 </style>
 </head>
 <body>
@@ -264,12 +342,12 @@
       </div>
       <button class="btn-full" id="start-btn" onclick="startSession()">start review</button>
     </div>
-    <div class="card" id="theme-card">
-      <div class="section-head" style="margin-bottom:0">
+    <div class="card collapsed" id="theme-card">
+      <div class="section-head clickable" onclick="toggleThemeCard()">
         <div class="label" style="margin:0">themes</div>
         <div style="display:flex;align-items:center;gap:6px">
-          <button onclick="runGrouping()" id="theme-refresh-btn" style="font-size:12px;padding:2px 8px;color:var(--text-secondary)">refresh</button>
-          <button class="toggle-btn" onclick="toggleThemeCard()">show / hide</button>
+          <button onclick="runGrouping();event.stopPropagation()" id="theme-refresh-btn" style="font-size:12px;padding:2px 8px;color:var(--text-secondary)">refresh</button>
+          <span class="toggle-icon" id="theme-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
         </div>
       </div>
       <div id="theme-body" class="hidden" style="margin-top:0.75rem">
@@ -283,10 +361,10 @@
       </div>
       <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
     </div>
-    <div class="card">
-      <div class="section-head" style="margin-bottom:0">
+    <div class="card collapsed" id="add-words-card">
+      <div class="section-head clickable" onclick="toggleAddWords()">
         <div class="label" style="margin:0">add words</div>
-        <button class="toggle-btn" onclick="toggleAddWords()">show / hide</button>
+        <span class="toggle-icon" id="add-words-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
       </div>
       <div id="add-words-body" class="hidden" style="margin-top:0.75rem">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
@@ -304,21 +382,24 @@
         <div id="add-feedback"></div>
       </div>
     </div>
-    <div class="card">
-      <div class="section-head">
+    <div class="card collapsed" id="word-bank-card">
+      <div class="section-head clickable" onclick="toggleWordBank()">
         <div class="label" style="margin:0">word bank</div>
-        <button class="toggle-btn" onclick="toggleWordBank()">show / hide</button>
+        <span class="toggle-icon" id="word-bank-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
       </div>
       <div id="word-bank-list" class="hidden"></div>
     </div>
   </div>
 
   <div id="session-screen" class="hidden">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
-      <span style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)" id="sess-round"></span>
-      <button onclick="endSessionEarly()" style="margin-left:auto;font-size:12px;padding:4px 10px;color:var(--text-secondary)">end early</button>
+    <div class="sess-header">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
+        <span style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)" id="sess-round"></span>
+        <button onclick="cancelSession()" style="margin-left:auto;font-size:12px;padding:4px 10px;color:var(--text-secondary)">cancel</button>
+        <button onclick="endSessionEarly()" style="font-size:12px;padding:4px 10px;color:var(--text-secondary)">end early</button>
+      </div>
+      <div class="phase-bar" id="phase-bar"></div>
     </div>
-    <div class="phase-bar" id="phase-bar"></div>
     <div id="phase-content"></div>
   </div>
 
@@ -407,13 +488,18 @@ function setSessionSize(n){
   loadHome();
 }
 
-function toggleThemeCard(){
-  document.getElementById('theme-body').classList.toggle('hidden');
+const SVG_CHEVRON_RIGHT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+const SVG_CHEVRON_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+function toggleSection(bodyId,iconId,cardId){
+  const body=document.getElementById(bodyId);
+  const icon=document.getElementById(iconId);
+  const opening=body.classList.toggle('hidden')===false;
+  icon.innerHTML=opening?SVG_CHEVRON_DOWN:SVG_CHEVRON_RIGHT;
+  document.getElementById(cardId).classList.toggle('collapsed',!opening);
 }
+function toggleThemeCard(){toggleSection('theme-body','theme-toggle-btn','theme-card');}
+function toggleAddWords(){toggleSection('add-words-body','add-words-toggle-btn','add-words-card');}
 
-function toggleAddWords(){
-  document.getElementById('add-words-body').classList.toggle('hidden');
-}
 
 function renderThemes(){
   const db=getDB();
@@ -489,19 +575,27 @@ function renderHardList(hard){
   const el=document.getElementById('hard-list');
   document.getElementById('hard-count-label').textContent=hard.length?hard.length+' words':'';
   if(!hard.length){el.innerHTML='<div class="muted">No words flagged as hard yet.</div>';return;}
-  el.innerHTML=hard.map(w=>`<div class="word-row"><span style="font-size:15px">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:13px">${esc(w.en)}</span><span class="badge badge-hard" style="margin-left:auto;margin-right:8px">${w.hardCount}x hard</span></div>`).join('');
+  el.innerHTML=hard.map(w=>`<div class="hard-row"><span style="font-size:15px">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:13px">${esc(w.en)}</span><span class="badge badge-hard" style="margin-left:auto">${w.hardCount}x hard</span></div>`).join('');
 }
 
 function toggleWordBank(){
   const el=document.getElementById('word-bank-list');
   const show=el.classList.contains('hidden');
   el.classList.toggle('hidden');
+  const icon=document.getElementById('word-bank-toggle-btn');
+  icon.innerHTML=show?SVG_CHEVRON_DOWN:SVG_CHEVRON_RIGHT;
+  document.getElementById('word-bank-card').classList.toggle('collapsed',!show);
   if(show){
     const words=Object.values(db.words);
     if(!words.length){el.innerHTML='<div class="muted">No words yet.</div>';return;}
-    el.innerHTML=words.map(w=>`<div class="word-row" id="wr-${esc(w.ko)}"><span style="font-size:14px">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:13px">${esc(w.en)}</span><span class="muted" style="font-size:12px;margin-left:auto;margin-right:8px">${w.nextReview?'next: '+esc(w.nextReview):'new'}</span><button class="del-btn" onclick="editWord(${escJS(w.ko)})">edit</button><button class="del-btn" onclick="deleteWord(${escJS(w.ko)})">remove</button></div>`).join('');
+    el.innerHTML=wordRowsHtml(words);
   }
 }
+
+function wordRowHtml(w){
+  return`<div class="word-row" id="wr-${esc(w.ko)}"><span class="wb-ko">${esc(w.ko)}</span><span class="wb-en">${esc(w.en)}</span><span class="wb-date">${w.nextReview?'next: '+esc(w.nextReview):'new'}</span><button class="del-btn" onclick="editWord(${escJS(w.ko)})">edit</button><button class="del-btn" onclick="deleteWord(${escJS(w.ko)})">remove</button></div>`;
+}
+function wordRowsHtml(words){return words.map(wordRowHtml).join('');}
 
 function deleteWord(ko){db=getDB();delete db.words[ko];saveDB(db);loadHome();renderWordBank();}
 
@@ -510,14 +604,15 @@ function renderWordBank(){
   if(!el||el.classList.contains('hidden'))return;
   const words=Object.values(db.words);
   if(!words.length){el.innerHTML='<div class="muted">No words yet.</div>';return;}
-  el.innerHTML=words.map(w=>`<div class="word-row" id="wr-${esc(w.ko)}"><span style="font-size:14px">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:13px">${esc(w.en)}</span><span class="muted" style="font-size:12px;margin-left:auto;margin-right:8px">${w.nextReview?'next: '+esc(w.nextReview):'new'}</span><button class="del-btn" onclick="editWord(${escJS(w.ko)})">edit</button><button class="del-btn" onclick="deleteWord(${escJS(w.ko)})">remove</button></div>`).join('');
+  el.innerHTML=wordRowsHtml(words);
 }
 
 function editWord(ko){
   db=getDB();const w=db.words[ko];if(!w)return;
   const row=document.getElementById('wr-'+ko);
   if(!row)return;
-  row.innerHTML=`<div style="display:flex;gap:6px;flex:1;align-items:center"><input type="text" id="edit-ko" value="${esc(w.ko)}" style="flex:1;font-size:14px;padding:6px 8px" /><input type="text" id="edit-en" value="${esc(w.en)}" style="flex:1;font-size:13px;padding:6px 8px" /></div><button class="del-btn" onclick="saveEditWord(${escJS(ko)})" style="font-weight:500;color:var(--teal)">save</button><button class="del-btn" onclick="renderWordBank()">cancel</button>`;
+  row.style.cssText='display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:0.5px solid var(--border)';
+  row.innerHTML=`<input type="text" id="edit-ko" value="${esc(w.ko)}" style="flex:1;font-size:14px;padding:6px 8px" /><input type="text" id="edit-en" value="${esc(w.en)}" style="flex:1;font-size:13px;padding:6px 8px" /><button class="del-btn" onclick="saveEditWord(${escJS(ko)})" style="font-weight:500;color:var(--teal)">save</button><button class="del-btn" onclick="renderWordBank()">cancel</button>`;
   document.getElementById('edit-ko')?.focus();
 }
 
@@ -596,6 +691,7 @@ function startSession(){
   const limit=sessionSize===0?Infinity:sessionSize;
   sessionQueue=[...hard,...normal].slice(0,limit);
   sessIdx=0;sessPhase=0;sessRatings=[];sessSentences=[];sessionContexts=[];
+  dbSnapshot=JSON.stringify(db);
   document.getElementById('home-screen').classList.add('hidden');
   document.getElementById('session-screen').classList.remove('hidden');
   renderSessionPhase();
@@ -623,35 +719,37 @@ function renderSessionPhase(){
   if(sessPhase===0){
     const kbdHints=isMobile?'':'<kbd>space</kbd>';
     const kbdR=isMobile?['','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>'];
-    el.innerHTML=`<div class="card"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div class="big" style="margin-top:8px">${esc(w.ko)}</div><div id="reveal-area" style="margin-top:10px"><button onclick="revealMeaning()">show meaning ${kbdHints}</button></div></div><div id="rate-area" class="hidden" style="margin-top:.75rem"><div class="card"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div>`;
+    el.innerHTML=`<div class="card" style="text-align:center"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div class="flashcard-word">${esc(w.ko)}</div></div><div class="session-actions"><div id="reveal-area"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div><div id="rate-area" class="hidden" style="margin-top:.75rem"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div></div>`;
   } else if(sessPhase===1){
     const hasSpeech=('webkitSpeechRecognition' in window||'SpeechRecognition' in window);
     el.innerHTML=`<div class="card">
-      <div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div>
-      <div style="text-align:center;padding:0.5rem 0 0.25rem">
-        <div style="font-size:13px;color:var(--text-secondary);margin-bottom:0.25rem">how do you say</div>
-        <div style="font-size:28px;font-weight:500;color:var(--text);line-height:1.3">${esc(w.en)}</div>
-        <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">in Korean?</div>
+      <div class="session-body">
+        <div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div>
+        <div style="text-align:center;padding:0.5rem 0 0.25rem">
+          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:0.25rem">how do you say</div>
+          <div style="font-size:28px;font-weight:500;color:var(--text);line-height:1.3">${esc(w.en)}</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">in Korean?</div>
+        </div>
+        ${hasSpeech?`
+        <button class="mic-btn" id="mic-btn" onclick="startVoice(${escJS(w.ko)})">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary)"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+        </button>
+        <div id="voice-status" style="text-align:center;font-size:13px;color:var(--text-secondary);min-height:20px;margin-bottom:0.75rem">tap mic to speak</div>
+        <div id="voice-result" style="min-height:40px"></div>`
+        :`<div class="answer-box" style="text-align:center;margin-top:1rem"><div class="muted" style="font-size:13px">Speech recognition not supported in this browser. Try Chrome or Edge.</div></div>`}
       </div>
-      ${hasSpeech?`
-      <button class="mic-btn" id="mic-btn" onclick="startVoice(${escJS(w.ko)})">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary)"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-      </button>
-      <div id="voice-status" style="text-align:center;font-size:13px;color:var(--text-secondary);min-height:20px;margin-bottom:0.75rem">tap mic to speak</div>
-      <div id="voice-result" style="min-height:40px"></div>`
-      :`<div class="answer-box" style="text-align:center;margin-top:1rem"><div class="muted" style="font-size:13px">Speech recognition not supported in this browser. Try Chrome or Edge.</div></div>`}
-      <div style="display:flex;justify-content:flex-end;margin-top:0.75rem">
+      <div class="session-actions" style="display:flex;justify-content:flex-end">
         <button onclick="nextWord()" style="font-size:13px">skip →</button>
       </div>
     </div>`;
   } else if(sessPhase===2){
     const ctx=sessionContexts[sessIdx]||(sessionContexts[sessIdx]=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en));
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">AI feedback${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div class="btn-row" style="margin-top:6px"><button onclick="revealUseGuidance(${escJS(w.ko)})">see guidance</button>${aiFbBtn}<button id="use-skip" onclick="nextWord()" style="margin-left:auto">skip →</button></div><div id="use-guidance"></div><div id="use-ai-feedback"></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-guidance"></div><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row" style="margin-top:0"><button onclick="revealUseGuidance(${escJS(w.ko)})">see guidance</button>${aiFbBtn}<button id="use-skip" onclick="nextWord()" style="margin-left:auto">skip →</button></div></div></div>`;
     setTimeout(()=>document.getElementById('use-ans')?.focus(),50);
   } else if(sessPhase===3){
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('seal',${escJS(w.ko)},${escJS(w.en)})">AI feedback${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:15px;color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div class="btn-row" style="margin-top:8px">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip →</button></div><div id="seal-ai-feedback"></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:15px;color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div id="seal-ai-feedback"></div></div><div class="session-actions"><div class="btn-row" style="margin-top:0">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip →</button></div></div></div>`;
     setTimeout(()=>document.getElementById('seal-ans')?.focus(),50);
   }
 }
@@ -714,6 +812,16 @@ function endSession(){
 }
 
 function endSessionEarly(){sessionContexts=[];endSession();}
+let dbSnapshot=null;
+function cancelSession(){
+  if(!confirm('Cancel session? No progress will be saved.')) return;
+  if(dbSnapshot) saveDB(JSON.parse(dbSnapshot));
+  dbSnapshot=null;
+  if(activeRecognition){activeRecognition.stop();activeRecognition=null;}
+  document.getElementById('session-screen').classList.add('hidden');
+  document.getElementById('home-screen').classList.remove('hidden');
+  loadHome();
+}
 function goHome(){
   document.getElementById('done-screen').classList.add('hidden');
   document.getElementById('home-screen').classList.remove('hidden');

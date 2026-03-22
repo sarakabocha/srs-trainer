@@ -752,7 +752,14 @@ function importData(e){
         if(!merged.words[w.ko]){merged.words[w.ko]=w;added++;}
         else{
           const ex=merged.words[w.ko];
-          if((w.level||0)>(ex.level||0)||(w.hardCount||0)>(ex.hardCount||0)){merged.words[w.ko]=w;updated++;}
+          const lvl=Math.max(ex.level||0,w.level||0);
+          const hc=Math.max(ex.hardCount||0,w.hardCount||0);
+          const nr=ex.nextReview&&w.nextReview?((ex.nextReview>w.nextReview)?ex.nextReview:w.nextReview):ex.nextReview||w.nextReview;
+          if(lvl!==(ex.level||0)||hc!==(ex.hardCount||0)){
+            ex.level=lvl;ex.hardCount=hc;if(nr)ex.nextReview=nr;
+            if(w.theme&&!ex.theme)ex.theme=w.theme;
+            updated++;
+          }
         }
       });
       merged.sessions=Math.max(existing.sessions||0,imported.sessions||0);

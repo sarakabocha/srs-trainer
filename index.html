@@ -195,6 +195,13 @@
   .story-word { font-weight: 500; color: var(--teal); }
   .sentence-chip { font-size: 13px; color: var(--text-secondary); padding: 6px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 6px; line-height: 1.5; }
   .sentence-chip .chip-word { font-weight: 500; color: var(--text); font-size: 12px; margin-bottom: 2px; }
+  .theme-pill { font-size: 12px; padding: 4px 10px; border-radius: 20px; border: 0.5px solid var(--border-hover); background: transparent; color: var(--text-secondary); cursor: pointer; transition: all .15s; font-family: var(--font-ui); }
+  .theme-pill:hover { background: var(--bg-secondary); color: var(--text); }
+  .theme-pill.active { background: var(--teal-light); color: var(--teal-dark); border-color: var(--teal); }
+  .theme-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 0.5px solid var(--border); }
+  .theme-row:last-child { border-bottom: none; }
+  .theme-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .theme-count { font-size: 12px; color: var(--text-secondary); }
 </style>
 </head>
 <body>
@@ -235,9 +242,20 @@
       <div class="stat"><div class="n" id="s-hard">0</div><div class="l">struggling</div></div>
       <div class="stat"><div class="n" id="s-sessions">0</div><div class="l">sessions</div></div>
     </div>
+    <div class="card" id="theme-card">
+      <div class="section-head" style="margin-bottom:0.5rem">
+        <div class="label" style="margin:0">themes</div>
+        <button onclick="runGrouping()" id="theme-refresh-btn" style="font-size:12px;padding:4px 10px;color:var(--text-secondary)">refresh</button>
+      </div>
+      <div id="theme-list"><div class="muted" style="font-size:13px">Add an API key and words to auto-group by theme.</div></div>
+    </div>
     <div class="card">
       <div class="label">today's queue</div>
       <div id="due-summary" style="font-size:15px;color:var(--text);margin:6px 0 .75rem;line-height:1.5"></div>
+      <div id="theme-filter" style="display:none;margin-bottom:0.75rem">
+        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">filter by theme</div>
+        <div id="theme-filter-btns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+      </div>
       <button class="btn-full" id="start-btn" onclick="startSession()">시작 — start review</button>
     </div>
     <div class="card">
@@ -313,6 +331,7 @@ function isDue(w){if(!w.nextReview)return true;return w.nextReview<=todayStr();}
 function nextInterval(w,rating){const lvl=Math.max(0,Math.min((w.level||0),4));const arr=INTERVALS[rating]||INTERVALS.ok;const days=arr[Math.min(lvl,arr.length-1)];const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
 function updateStreak(db){const today=todayStr();if(db.lastDate===today)return;const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yd=yesterday.toISOString().slice(0,10);if(db.lastDate===yd)db.streak=(db.streak||0)+1;else if(db.lastDate!==today)db.streak=1;db.lastDate=today;}
 
+let activeThemeFilter=null;
 let sessionQueue=[],sessIdx=0,sessPhase=0,sessRatings=[],db;
 
 function loadHome(){
@@ -326,9 +345,83 @@ function loadHome(){
   document.getElementById('s-sessions').textContent=db.sessions||0;
   document.getElementById('streak-num').textContent=db.streak||0;
   document.getElementById('last-session-label').textContent=db.lastDate?'last: '+db.lastDate:'';
-  document.getElementById('due-summary').textContent=due.length===0?'No words due — check back tomorrow, or add new words below.':`${due.length} word${due.length>1?'s':''} ready for review.${hard.length>0?' Includes '+hard.length+' hard word'+(hard.length>1?'s':'')+'.':''}`;
-  document.getElementById('start-btn').disabled=due.length===0;
+  const filteredDue=activeThemeFilter?due.filter(w=>w.theme===activeThemeFilter):due;
+  document.getElementById('due-summary').textContent=filteredDue.length===0
+    ?activeThemeFilter?`No words due in "${activeThemeFilter}" — try another theme or check back tomorrow.`:'No words due — check back tomorrow, or add new words below.'
+    :`${filteredDue.length} word${filteredDue.length>1?'s':''} ready for review.${hard.length>0&&!activeThemeFilter?' Includes '+hard.length+' hard word'+(hard.length>1?'s':'')+'.':''}`;
+  document.getElementById('start-btn').disabled=filteredDue.length===0;
   renderHardList(hard);
+  renderThemes();
+}
+
+function renderThemes(){
+  const db=getDB();
+  const words=Object.values(db.words);
+  const key=getApiKey();
+  const themed=words.filter(w=>w.theme);
+  const themeEl=document.getElementById('theme-list');
+  const filterEl=document.getElementById('theme-filter');
+  const filterBtns=document.getElementById('theme-filter-btns');
+
+  if(!key){
+    themeEl.innerHTML=`<div class="muted" style="font-size:13px">Add an API key in the ··· menu to enable theme grouping.</div>`;
+    filterEl.style.display='none';return;
+  }
+  if(!themed.length){
+    themeEl.innerHTML=`<div class="muted" style="font-size:13px">${words.length?'Click refresh to group your words by theme.':'Add words to get started.'}</div>`;
+    filterEl.style.display='none';return;
+  }
+  const groups={};
+  themed.forEach(w=>{if(!groups[w.theme])groups[w.theme]=[];groups[w.theme].push(w);});
+  const unthemed=words.filter(w=>!w.theme);
+  themeEl.innerHTML=Object.entries(groups).sort((a,b)=>b[1].length-a[1].length).map(([theme,ws])=>`
+    <div class="theme-row">
+      <span class="theme-name">${theme}</span>
+      <span class="theme-count">${ws.length} word${ws.length>1?'s':''} · ${ws.filter(isDue).length} due</span>
+    </div>`).join('')+(unthemed.length?`<div class="theme-row"><span class="theme-name" style="color:var(--text-secondary)">ungrouped</span><span class="theme-count">${unthemed.length} words</span></div>`:'');
+
+  const themes=Object.keys(groups).sort();
+  filterEl.style.display='block';
+  filterBtns.innerHTML=`<button class="theme-pill${!activeThemeFilter?' active':''}" onclick="setThemeFilter(null)">all</button>`
+    +themes.map(t=>`<button class="theme-pill${activeThemeFilter===t?' active':''}" onclick="setThemeFilter('${t.replace(/'/g,"\\'")}')">  ${t}</button>`).join('');
+}
+
+function setThemeFilter(theme){
+  activeThemeFilter=theme;
+  loadHome();
+}
+
+async function runGrouping(){
+  const key=getApiKey();
+  if(!key){showFeedback('Add an API key first.');return;}
+  const db=getDB();
+  const words=Object.values(db.words);
+  if(!words.length){showFeedback('No words to group.');return;}
+  const btn=document.getElementById('theme-refresh-btn');
+  btn.textContent='grouping...';btn.disabled=true;
+  document.getElementById('theme-list').innerHTML=`<div class="ai-loading">analysing your word bank...</div>`;
+  const wordList=words.map(w=>`${w.ko}: ${w.en}`).join('\n');
+  const prompt=`You are a Korean vocabulary organiser. Group these words into 3-8 thematic categories. Use short English theme names (2-3 words max, e.g. "religion", "body & health", "emotions", "daily life").\n\nWords:\n${wordList}\n\nRespond ONLY with valid JSON in this exact format, no other text:\n{"theme_name": ["word1", "word2"], "theme_name2": ["word3"]}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    if(data.error){document.getElementById('theme-list').innerHTML=`<div class="ai-loading">Error: ${data.error.message}</div>`;return;}
+    const text=(data.content?.[0]?.text||'').trim().replace(/```json|```/g,'').trim();
+    const grouped=JSON.parse(text);
+    Object.entries(grouped).forEach(([theme,koWords])=>{
+      koWords.forEach(ko=>{if(db.words[ko])db.words[ko].theme=theme;});
+    });
+    saveDB(db);
+    loadHome();
+  }catch(e){
+    document.getElementById('theme-list').innerHTML=`<div class="ai-loading">Could not group words. Try again.</div>`;
+  }finally{
+    btn.textContent='refresh';btn.disabled=false;
+  }
 }
 
 function renderHardList(hard){
@@ -382,6 +475,7 @@ function addSingleWord(){
   document.getElementById('add-ko').value='';
   document.getElementById('add-en').value='';
   loadHome();
+  if(getApiKey()) runGrouping();
 }
 
 function addBulk(){
@@ -399,6 +493,7 @@ function addBulk(){
   const msg=added+' added'+(dupes.length?` — ${dupes.length} skipped (already in bank): ${dupes.join(', ')}`:'.')  ;
   showFeedback(msg);
   toggleBulk();loadHome();
+  if(getApiKey()&&added>0) runGrouping();
 }
 
 function toggleBulk(){const el=document.getElementById('bulk-area');const btn=document.getElementById('bulk-toggle-btn');const show=el.classList.contains('hidden');el.classList.toggle('hidden');btn.textContent=show?'hide bulk':'bulk paste';}
@@ -407,7 +502,8 @@ function showFeedback(msg){const el=document.getElementById('add-feedback');el.t
 function startSession(){
   db=getDB();
   const due=Object.values(db.words).filter(isDue);
-  sessionQueue=due.sort((a,b)=>(b.hardCount||0)-(a.hardCount||0)).slice(0,5);
+  const filtered=activeThemeFilter?due.filter(w=>w.theme===activeThemeFilter):due;
+  sessionQueue=filtered.sort((a,b)=>(b.hardCount||0)-(a.hardCount||0)).slice(0,5);
   sessIdx=0;sessPhase=0;sessRatings=[];sessSentences=[];
   document.getElementById('home-screen').classList.add('hidden');
   document.getElementById('session-screen').classList.remove('hidden');

@@ -499,11 +499,38 @@ function toggleWordBank(){
   if(show){
     const words=Object.values(db.words);
     if(!words.length){el.innerHTML='<div class="muted">No words yet.</div>';return;}
-    el.innerHTML=words.map(w=>`<div class="word-row"><span style="font-size:14px">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:13px">${esc(w.en)}</span><span class="muted" style="font-size:12px;margin-left:auto;margin-right:8px">${w.nextReview?'next: '+esc(w.nextReview):'new'}</span><button class="del-btn" onclick="deleteWord(${escJS(w.ko)})">remove</button></div>`).join('');
+    el.innerHTML=words.map(w=>`<div class="word-row" id="wr-${esc(w.ko)}"><span style="font-size:14px">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:13px">${esc(w.en)}</span><span class="muted" style="font-size:12px;margin-left:auto;margin-right:8px">${w.nextReview?'next: '+esc(w.nextReview):'new'}</span><button class="del-btn" onclick="editWord(${escJS(w.ko)})">edit</button><button class="del-btn" onclick="deleteWord(${escJS(w.ko)})">remove</button></div>`).join('');
   }
 }
 
-function deleteWord(ko){db=getDB();delete db.words[ko];saveDB(db);loadHome();document.getElementById('word-bank-list').classList.add('hidden');}
+function deleteWord(ko){db=getDB();delete db.words[ko];saveDB(db);loadHome();renderWordBank();}
+
+function renderWordBank(){
+  const el=document.getElementById('word-bank-list');
+  if(!el||el.classList.contains('hidden'))return;
+  const words=Object.values(db.words);
+  if(!words.length){el.innerHTML='<div class="muted">No words yet.</div>';return;}
+  el.innerHTML=words.map(w=>`<div class="word-row" id="wr-${esc(w.ko)}"><span style="font-size:14px">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:13px">${esc(w.en)}</span><span class="muted" style="font-size:12px;margin-left:auto;margin-right:8px">${w.nextReview?'next: '+esc(w.nextReview):'new'}</span><button class="del-btn" onclick="editWord(${escJS(w.ko)})">edit</button><button class="del-btn" onclick="deleteWord(${escJS(w.ko)})">remove</button></div>`).join('');
+}
+
+function editWord(ko){
+  db=getDB();const w=db.words[ko];if(!w)return;
+  const row=document.getElementById('wr-'+ko);
+  if(!row)return;
+  row.innerHTML=`<div style="display:flex;gap:6px;flex:1;align-items:center"><input type="text" id="edit-ko" value="${esc(w.ko)}" style="flex:1;font-size:14px;padding:6px 8px" /><input type="text" id="edit-en" value="${esc(w.en)}" style="flex:1;font-size:13px;padding:6px 8px" /></div><button class="del-btn" onclick="saveEditWord(${escJS(ko)})" style="font-weight:500;color:var(--teal)">save</button><button class="del-btn" onclick="renderWordBank()">cancel</button>`;
+  document.getElementById('edit-ko')?.focus();
+}
+
+function saveEditWord(oldKo){
+  const newKo=document.getElementById('edit-ko')?.value.trim();
+  const newEn=document.getElementById('edit-en')?.value.trim();
+  if(!newKo||!newEn)return;
+  db=getDB();const w=db.words[oldKo];if(!w)return;
+  if(newKo!==oldKo){delete db.words[oldKo];w.ko=newKo;}
+  w.en=newEn;
+  db.words[newKo]=w;
+  saveDB(db);loadHome();renderWordBank();
+}
 
 function similar(a,b){
   if(a===b) return true;
@@ -686,7 +713,7 @@ function endSession(){
   generateStory();
 }
 
-function endSessionEarly(){sessSentences=[];sessionContexts=[];endSession();}
+function endSessionEarly(){sessionContexts=[];endSession();}
 function goHome(){
   document.getElementById('done-screen').classList.add('hidden');
   document.getElementById('home-screen').classList.remove('hidden');

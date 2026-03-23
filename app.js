@@ -372,6 +372,12 @@ function showScreen(name){
   document.getElementById('home-screen').classList.toggle('hidden',name!=='home');
   document.getElementById('session-screen').classList.toggle('hidden',name!=='session');
   document.getElementById('done-screen').classList.toggle('hidden',name!=='done');
+  if(name!=='session'){
+    document.getElementById('phase-content').innerHTML='';
+    document.getElementById('phase-bar').innerHTML='';
+    const sr=document.getElementById('sess-round');
+    if(sr) sr.textContent='';
+  }
   window.scrollTo(0,0);
 }
 
@@ -488,7 +494,7 @@ function skipRecall(){
 function skipUse(){
   const w=sessionQueue[sessIdx];
   const ans=document.getElementById('use-ans')?.value?.trim();
-  if(ans) sessUseSentences.push({ko:w.ko,en:w.en,sentence:ans});
+  if(ans&&!sessUseSentences.find(s=>s.ko===w.ko)) sessUseSentences.push({ko:w.ko,en:w.en,sentence:ans});
   nextWord();
 }
 
@@ -496,7 +502,7 @@ function finishWord(){
   if(sessPhase===3){
     const ans=document.getElementById('seal-ans')?.value?.trim();
     const w=sessionQueue[sessIdx];
-    if(ans) sessSentences.push({ko:w.ko,en:w.en,sentence:ans});
+    if(ans&&!sessSentences.find(s=>s.ko===w.ko)) sessSentences.push({ko:w.ko,en:w.en,sentence:ans});
   }
   nextWord();
 }

@@ -347,6 +347,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
     flex-direction: column;
   }
   #phase-content > .card {
+    min-height: 0;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -356,5 +357,8 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
     padding-top: 0.75rem;
     margin-top: auto;
     padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
+  }
+  #session-screen {
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 }

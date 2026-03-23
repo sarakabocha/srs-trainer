@@ -67,6 +67,8 @@ let sessionSize=5;
 let sessionQueue=[],sessIdx=0,sessPhase=0,sessRatings=[],db;
 let sessSentences=[];
 let sessionContexts=[];
+let sessRecallResults=[];  // round 2: {ko, en, result: 'correct'|'gave-up'|'skipped'}
+let sessUseSentences=[];   // round 3: {ko, en, sentence, score}
 let dbSnapshot=null;
 let activeRecognition=null;
 
@@ -360,7 +362,7 @@ function startSession(){
   const normal=filtered.filter(w=>(w.hardCount||0)===0).sort(()=>Math.random()-0.5);
   const limit=sessionSize===0?Infinity:sessionSize;
   sessionQueue=[...hard,...normal].slice(0,limit);
-  sessIdx=0;sessPhase=0;sessRatings=[];sessSentences=[];sessionContexts=[];
+  sessIdx=0;sessPhase=0;sessRatings=[];sessSentences=[];sessionContexts=[];sessRecallResults=[];sessUseSentences=[];
   dbSnapshot=JSON.stringify(db);
   showScreen('session');
   renderSessionPhase();
@@ -370,6 +372,7 @@ function showScreen(name){
   document.getElementById('home-screen').classList.toggle('hidden',name!=='home');
   document.getElementById('session-screen').classList.toggle('hidden',name!=='session');
   document.getElementById('done-screen').classList.toggle('hidden',name!=='done');
+  window.scrollTo(0,0);
 }
 
 function renderPhaseBar(){
@@ -415,7 +418,7 @@ function renderSessionPhase(){
         <div id="type-result" style="min-height:20px;margin-top:0.5rem"></div>
       </div>
       <div class="session-actions" style="display:flex;justify-content:flex-end">
-        <button onclick="nextWord()" style="font-size:13px">skip ${SVG_ARROW_RIGHT}</button>
+        <button onclick="skipRecall()" style="font-size:13px">skip ${SVG_ARROW_RIGHT}</button>
       </div>
     </div>`;
     setTimeout(()=>{
@@ -427,7 +430,7 @@ function renderSessionPhase(){
   } else if(sessPhase===2){
     const ctx=sessionContexts[sessIdx]||(sessionContexts[sessIdx]=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en));
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="use-skip" onclick="nextWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="use-skip" onclick="skipUse()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('use-ans')?.focus(),50);
   } else if(sessPhase===3){
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('seal',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
@@ -436,7 +439,12 @@ function renderSessionPhase(){
   }
 }
 
+function stopRecognition(){
+  if(activeRecognition){activeRecognition.stop();activeRecognition=null;}
+}
+
 function nextWord(){
+  stopRecognition();
   sessIdx++;
   if(sessIdx>=sessionQueue.length){
     sessPhase++;
@@ -463,7 +471,26 @@ function rateWord(rating){
   nextWord();
 }
 
-function advancePhase(){nextWord();}
+function advancePhase(){
+  if(sessPhase===1){
+    const w=sessionQueue[sessIdx];
+    sessRecallResults.push({ko:w.ko,en:w.en,result:'correct'});
+  }
+  nextWord();
+}
+
+function skipRecall(){
+  const w=sessionQueue[sessIdx];
+  sessRecallResults.push({ko:w.ko,en:w.en,result:'skipped'});
+  nextWord();
+}
+
+function skipUse(){
+  const w=sessionQueue[sessIdx];
+  const ans=document.getElementById('use-ans')?.value?.trim();
+  if(ans) sessUseSentences.push({ko:w.ko,en:w.en,sentence:ans});
+  nextWord();
+}
 
 function finishWord(){
   if(sessPhase===3){
@@ -484,7 +511,47 @@ function endSession(){
   document.getElementById('done-stats').innerHTML=`<div class="stat"><div class="n">${good}</div><div class="l">knew it</div></div><div class="stat"><div class="n">${ok}</div><div class="l">vaguely</div></div><div class="stat"><div class="n">${hard}</div><div class="l">hard</div></div><div class="stat"><div class="n">${db.sessions}</div><div class="l">total sessions</div></div>`;
   const sentEl=document.getElementById('story-sentences');
   sentEl.innerHTML=sessSentences.map(s=>`<div class="sentence-chip"><div class="chip-word">${esc(s.ko)} — ${esc(s.en)}</div>${esc(s.sentence)}</div>`).join('');
+  renderRecap();
   generateStory();
+}
+
+function scoreBadge(score){
+  if(!score) return '';
+  const cls=score==='great'?'score-great':score==='needs work'?'score-revise':'score-ok';
+  return `<span class="fb-score ${cls}" style="font-size:11px;padding:1px 7px">${esc(score)}</span>`;
+}
+
+function renderRecap(){
+  let html='';
+
+  // Round 2 — Recall
+  if(sessRecallResults.length){
+    const correct=sessRecallResults.filter(r=>r.result==='correct').length;
+    html+=`<div class="card"><div class="label">round 2 — say it</div>`;
+    html+=`<div class="muted" style="margin-bottom:8px">${correct} of ${sessRecallResults.length} recalled correctly</div>`;
+    html+=sessRecallResults.map(r=>{
+      const icon=r.result==='correct'?'<span style="color:var(--teal)">✓</span>':r.result==='gave-up'?'<span style="color:var(--red)">✗</span>':'<span style="color:var(--text-secondary)">—</span>';
+      const label=r.result==='correct'?'recalled':r.result==='gave-up'?'gave up':'skipped';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px">${icon} <span>${esc(r.ko)}</span><span class="muted">${esc(r.en)}</span><span class="muted" style="margin-left:auto">${label}</span></div>`;
+    }).join('');
+    html+=`</div>`;
+  }
+
+  // Round 3 — Use it
+  if(sessUseSentences.length){
+    html+=`<div class="card"><div class="label">round 3 — use it</div>`;
+    html+=sessUseSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:12px;font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:12px">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:13px;color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
+    html+=`</div>`;
+  }
+
+  // Round 4 — Seal it
+  if(sessSentences.length){
+    html+=`<div class="card"><div class="label">round 4 — seal it</div>`;
+    html+=sessSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:12px;font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:12px">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:13px;color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
+    html+=`</div>`;
+  }
+
+  document.getElementById('recap-section').innerHTML=html;
 }
 
 function endSessionEarly(){sessionContexts=[];endSession();}
@@ -493,7 +560,7 @@ function cancelSession(){
   if(!confirm('Cancel session? No progress will be saved.')) return;
   if(dbSnapshot) saveDB(JSON.parse(dbSnapshot));
   dbSnapshot=null;
-  if(activeRecognition){activeRecognition.stop();activeRecognition=null;}
+  stopRecognition();
   showScreen('home');
   loadHome();
 }
@@ -566,6 +633,11 @@ async function getAiFeedback(phase,ko,en){
     if(sugg&&sugg.toLowerCase()!=='none')html+=`<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:13px"><span style="font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;color:var(--text-secondary)">suggestion</span><span style="color:var(--text)">${esc(sugg)}</span></div>`;
     html+=`</div>`;
     document.getElementById(outId).innerHTML=html;
+    // Store score on the corresponding sentence record
+    const arr=phase==='use'?sessUseSentences:sessSentences;
+    const existing=arr.find(s=>s.ko===ko);
+    if(existing){existing.score=scoreLabel;}
+    else{arr.push({ko,en,sentence:answer,score:scoreLabel});}
     const skipBtn=document.getElementById(phase==='use'?'use-skip':'seal-skip');
     if(skipBtn) skipBtn.innerHTML='next '+SVG_ARROW_RIGHT;
   }catch(e){
@@ -728,7 +800,9 @@ function giveUpTyped(expectedKo){
   const input=document.getElementById('type-ans');
   const result=document.getElementById('type-result');
   if(input){input.value=expectedKo;input.disabled=true;input.style.color='var(--teal)';}
-  if(result) result.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="advancePhase()">next →</button></div>`;
+  const w=sessionQueue[sessIdx];
+  sessRecallResults.push({ko:w.ko,en:w.en,result:'gave-up'});
+  if(result) result.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="nextWord()">next →</button></div>`;
 }
 
 // — Keyboard Shortcuts —
@@ -782,6 +856,12 @@ document.addEventListener('click',function(e){
   const btn=document.getElementById('menu-btn');
   if(!menu||!btn) return;
   if(!menu.contains(e.target)&&e.target!==btn){menu.classList.add('hidden');}
+});
+
+// — Visibility —
+
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden) stopRecognition();
 });
 
 // — Init —

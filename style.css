@@ -257,6 +257,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
 .story-word { font-weight: 500; color: var(--teal); }
 .sentence-chip { font-size: 13px; color: var(--text-secondary); padding: 6px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 6px; line-height: 1.5; }
 .sentence-chip .chip-word { font-weight: 500; color: var(--text); font-size: 12px; margin-bottom: 2px; }
+#recap-section .card > div:last-child { border-bottom: none; }
 
 /* — Themes — */
 

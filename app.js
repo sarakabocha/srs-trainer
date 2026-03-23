@@ -426,11 +426,11 @@ function renderSessionPhase(){
     },50);
   } else if(sessPhase===2){
     const ctx=sessionContexts[sessIdx]||(sessionContexts[sessIdx]=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en));
-    const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">AI feedback${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-guidance"></div><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row"><button onclick="revealUseGuidance(${escJS(w.ko)})">see guidance</button>${aiFbBtn}<button id="use-skip" onclick="nextWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
+    const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="use-skip" onclick="nextWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('use-ans')?.focus(),50);
   } else if(sessPhase===3){
-    const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('seal',${escJS(w.ko)},${escJS(w.en)})">AI feedback${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
+    const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('seal',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
     el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:15px;color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div id="seal-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('seal-ans')?.focus(),50);
   }
@@ -453,9 +453,6 @@ function revealMeaning(){
   document.getElementById('rate-area').classList.remove('hidden');
 }
 
-function revealUseGuidance(ko){
-  document.getElementById('use-guidance').innerHTML=`<div class="answer-box" style="margin-top:8px"><div class="muted" style="font-size:13px;line-height:1.6">No single right answer. Did you use ${esc(ko)} naturally and in the right context? If stuck, try saying it aloud first.</div></div>`;
-}
 
 function rateWord(rating){
   const w=sessionQueue[sessIdx];db=getDB();const word=db.words[w.ko];if(!word)return;
@@ -565,7 +562,7 @@ async function getAiFeedback(phase,ko,en){
     const sugg=(suggM?.[1]||'').trim();
     const scoreClass=score.includes('great')?'score-great':score.includes('needs')?'score-revise':'score-ok';
     const scoreLabel=score.includes('great')?'great':score.includes('needs')?'needs work':'good';
-    let html=`<div class="ai-feedback-box"><div class="fb-label">AI feedback</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div style="color:var(--text)">${esc(feed)}</div>`;
+    let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div style="color:var(--text)">${esc(feed)}</div>`;
     if(sugg&&sugg.toLowerCase()!=='none')html+=`<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:13px"><span style="font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;color:var(--text-secondary)">suggestion</span><span style="color:var(--text)">${esc(sugg)}</span></div>`;
     html+=`</div>`;
     document.getElementById(outId).innerHTML=html;

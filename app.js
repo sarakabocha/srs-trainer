@@ -403,7 +403,7 @@ function renderSessionPhase(){
   if(sessPhase===0){
     const kbdHints=isMobile?'':'<kbd>space</kbd>';
     const kbdR=isMobile?['','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>'];
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div class="flashcard-word">${esc(w.ko)}</div></div><div class="session-actions"><div id="reveal-area"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div><div id="rate-area" class="hidden" style="margin-top:.75rem"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div class="flashcard-word" style="margin-bottom:0.5rem">${esc(w.ko)}</div><div id="reveal-area" style="width:100%"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div></div><div class="session-actions"><div id="rate-area" class="hidden"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div></div>`;
   } else if(sessPhase===1){
     const hasSpeech=('webkitSpeechRecognition' in window||'SpeechRecognition' in window);
     el.innerHTML=`<div class="card">
@@ -429,9 +429,14 @@ function renderSessionPhase(){
     </div>`;
     setTimeout(()=>{
       const ti=document.getElementById('type-ans');
-      if(ti) ti.addEventListener('keydown',function(e){
-        if(e.key==='Enter'){e.preventDefault();checkTypedAnswer(w.ko);}
-      });
+      if(ti){
+        ti.addEventListener('keydown',function(e){
+          if(e.key==='Enter'){e.preventDefault();checkTypedAnswer(w.ko);}
+        });
+        ti.addEventListener('blur',function(){
+          if(ti.value.trim()&&!ti.disabled) setTimeout(()=>checkTypedAnswer(w.ko),100);
+        });
+      }
     },50);
   } else if(sessPhase===2){
     const ctx=sessionContexts[sessIdx]||(sessionContexts[sessIdx]=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en));

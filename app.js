@@ -362,9 +362,14 @@ function startSession(){
   sessionQueue=[...hard,...normal].slice(0,limit);
   sessIdx=0;sessPhase=0;sessRatings=[];sessSentences=[];sessionContexts=[];
   dbSnapshot=JSON.stringify(db);
-  document.getElementById('home-screen').classList.add('hidden');
-  document.getElementById('session-screen').classList.remove('hidden');
+  showScreen('session');
   renderSessionPhase();
+}
+
+function showScreen(name){
+  document.getElementById('home-screen').classList.toggle('hidden',name!=='home');
+  document.getElementById('session-screen').classList.toggle('hidden',name!=='session');
+  document.getElementById('done-screen').classList.toggle('hidden',name!=='done');
 }
 
 function renderPhaseBar(){
@@ -389,7 +394,7 @@ function renderSessionPhase(){
   if(sessPhase===0){
     const kbdHints=isMobile?'':'<kbd>space</kbd>';
     const kbdR=isMobile?['','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>'];
-    el.innerHTML=`<div class="card"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div class="flashcard-word">${esc(w.ko)}</div><div id="reveal-area"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div></div><div id="rate-area" class="hidden" style="margin-top:.75rem"><div class="card"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div class="flashcard-word">${esc(w.ko)}</div></div><div class="session-actions"><div id="reveal-area"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div><div id="rate-area" class="hidden" style="margin-top:.75rem"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div></div>`;
   } else if(sessPhase===1){
     const hasSpeech=('webkitSpeechRecognition' in window||'SpeechRecognition' in window);
     el.innerHTML=`<div class="card">
@@ -474,8 +479,7 @@ function finishWord(){
 
 function endSession(){
   db=getDB();db.sessions=(db.sessions||0)+1;updateStreak(db);saveDB(db);
-  document.getElementById('session-screen').classList.add('hidden');
-  document.getElementById('done-screen').classList.remove('hidden');
+  showScreen('done');
   const good=sessRatings.filter(r=>r.rating==='good').length;
   const ok=sessRatings.filter(r=>r.rating==='ok').length;
   const hard=sessRatings.filter(r=>r.rating==='hard').length;
@@ -493,14 +497,12 @@ function cancelSession(){
   if(dbSnapshot) saveDB(JSON.parse(dbSnapshot));
   dbSnapshot=null;
   if(activeRecognition){activeRecognition.stop();activeRecognition=null;}
-  document.getElementById('session-screen').classList.add('hidden');
-  document.getElementById('home-screen').classList.remove('hidden');
+  showScreen('home');
   loadHome();
 }
 
 function goHome(){
-  document.getElementById('done-screen').classList.add('hidden');
-  document.getElementById('home-screen').classList.remove('hidden');
+  showScreen('home');
   loadHome();
 }
 

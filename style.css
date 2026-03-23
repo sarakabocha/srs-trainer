@@ -354,6 +354,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   .session-actions {
     padding-top: 0.75rem;
     margin-top: auto;
-    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0.75rem));
   }
 }

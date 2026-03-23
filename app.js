@@ -372,11 +372,15 @@ function showScreen(name){
   document.getElementById('home-screen').classList.toggle('hidden',name!=='home');
   document.getElementById('session-screen').classList.toggle('hidden',name!=='session');
   document.getElementById('done-screen').classList.toggle('hidden',name!=='done');
+  const sessHeader=document.querySelector('.sess-header');
   if(name!=='session'){
     document.getElementById('phase-content').innerHTML='';
     document.getElementById('phase-bar').innerHTML='';
     const sr=document.getElementById('sess-round');
     if(sr) sr.textContent='';
+    if(sessHeader) sessHeader.style.display='none';
+  } else {
+    if(sessHeader) sessHeader.style.display='';
   }
   window.scrollTo(0,0);
 }
@@ -403,12 +407,12 @@ function renderSessionPhase(){
   if(sessPhase===0){
     const kbdHints=isMobile?'':'<kbd>space</kbd>';
     const kbdR=isMobile?['','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>'];
-    el.innerHTML=`<div class="card"><div class="session-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div class="flashcard-word" style="margin-bottom:0.5rem">${esc(w.ko)}</div><div id="reveal-area" style="width:100%"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div></div><div class="session-actions"><div id="rate-area" class="hidden"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div class="flashcard-word" style="margin-bottom:0.5rem">${esc(w.ko)}</div><div id="reveal-area" style="width:100%"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div></div><div class="session-actions" style="padding-top:1.5rem"><div id="rate-area" class="hidden"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div></div>`;
   } else if(sessPhase===1){
     const hasSpeech=('webkitSpeechRecognition' in window||'SpeechRecognition' in window);
     el.innerHTML=`<div class="card">
       <div class="session-body">
-        <div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div>
+        <div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div>
         <div style="text-align:center;padding:0.5rem 0 0.25rem">
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:0.25rem">how do you say</div>
           <div style="font-size:28px;font-weight:500;color:var(--text);line-height:1.3">${esc(w.en)}</div>
@@ -441,11 +445,11 @@ function renderSessionPhase(){
   } else if(sessPhase===2){
     const ctx=sessionContexts[sessIdx]||(sessionContexts[sessIdx]=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en));
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="use-skip" onclick="skipUse()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="use-skip" onclick="skipUse()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('use-ans')?.focus(),50);
   } else if(sessPhase===3){
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('seal',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">word ${sessIdx+1} of ${sessionQueue.length}</div><div style="font-size:15px;color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div id="seal-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="font-size:15px;color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div id="seal-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('seal-ans')?.focus(),50);
   }
 }
@@ -479,6 +483,7 @@ function rateWord(rating){
   else if(rating==='good'){word.level=Math.min(4,(word.level||0)+1);if(word.hardCount>0)word.hardCount--;}
   word.nextReview=nextInterval(word,rating);
   saveDB(db);sessRatings.push({ko:w.ko,rating});
+  if(rating==='hard') sessionQueue.push(w);
   nextWord();
 }
 
@@ -515,9 +520,12 @@ function finishWord(){
 function endSession(){
   db=getDB();db.sessions=(db.sessions||0)+1;updateStreak(db);saveDB(db);
   showScreen('done');
-  const good=sessRatings.filter(r=>r.rating==='good').length;
-  const ok=sessRatings.filter(r=>r.rating==='ok').length;
-  const hard=sessRatings.filter(r=>r.rating==='hard').length;
+  const finalRatings={};
+  sessRatings.forEach(r=>{finalRatings[r.ko]=r.rating;});
+  const ratings=Object.values(finalRatings);
+  const good=ratings.filter(r=>r==='good').length;
+  const ok=ratings.filter(r=>r==='ok').length;
+  const hard=ratings.filter(r=>r==='hard').length;
   document.getElementById('done-msg').textContent=`${sessionQueue.length}개 단어 완료. Hard words come back sooner — you'll see them again before the rest.`;
   document.getElementById('done-stats').innerHTML=`<div class="stat"><div class="n">${good}</div><div class="l">knew it</div></div><div class="stat"><div class="n">${ok}</div><div class="l">vaguely</div></div><div class="stat"><div class="n">${hard}</div><div class="l">hard</div></div><div class="stat"><div class="n">${db.sessions}</div><div class="l">total sessions</div></div>`;
   const sentEl=document.getElementById('story-sentences');
@@ -535,12 +543,15 @@ function scoreBadge(score){
 function renderRecap(){
   let html='';
 
-  // Round 2 — Recall
+  // Round 2 — Recall (show final result per word)
   if(sessRecallResults.length){
-    const correct=sessRecallResults.filter(r=>r.result==='correct').length;
+    const byWord={};
+    sessRecallResults.forEach(r=>{byWord[r.ko]=r;});
+    const unique=Object.values(byWord);
+    const correct=unique.filter(r=>r.result==='correct').length;
     html+=`<div class="card"><div class="label">round 2 — say it</div>`;
-    html+=`<div class="muted" style="margin-bottom:8px">${correct} of ${sessRecallResults.length} recalled correctly</div>`;
-    html+=sessRecallResults.map(r=>{
+    html+=`<div class="muted" style="margin-bottom:8px">${correct} of ${unique.length} recalled correctly</div>`;
+    html+=unique.map(r=>{
       const icon=r.result==='correct'?'<span style="color:var(--teal)">✓</span>':r.result==='gave-up'?'<span style="color:var(--red)">✗</span>':'<span style="color:var(--text-secondary)">—</span>';
       const label=r.result==='correct'?'recalled':r.result==='gave-up'?'gave up':'skipped';
       return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px">${icon} <span>${esc(r.ko)}</span><span class="muted">${esc(r.en)}</span><span class="muted" style="margin-left:auto">${label}</span></div>`;
@@ -813,6 +824,7 @@ function giveUpTyped(expectedKo){
   if(input){input.value=expectedKo;input.disabled=true;input.style.color='var(--teal)';}
   const w=sessionQueue[sessIdx];
   sessRecallResults.push({ko:w.ko,en:w.en,result:'gave-up'});
+  sessionQueue.push(w);
   if(result) result.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="nextWord()">next →</button></div>`;
 }
 

@@ -633,7 +633,7 @@ async function getAiFeedback(phase,ko,en){
   const answer=document.getElementById(ansId)?.value?.trim();
   if(!answer){document.getElementById(outId).innerHTML=`<div class="ai-loading">Write something first.</div>`;return;}
   document.getElementById(outId).innerHTML=`<div class="ai-loading">evaluating...</div>`;
-  const prompt=`You are a Korean language tutor for an upper-intermediate learner. The target word is "${ko}" (${en}).\n\nThe learner wrote this Korean sentence:\n"${answer}"\n\nEvaluate in 3 parts, be concise:\n1. SCORE: one of — great / good / needs work\n2. FEEDBACK: 1-2 sentences on grammar, naturalness, or word usage. Be specific.\n3. SUGGESTION: If score is not "great", rewrite the sentence more naturally (Korean only, then translation in parentheses). If great, skip this.\n\nReply in this exact format:\nSCORE: [great/good/needs work]\nFEEDBACK: [your feedback]\nSUGGESTION: [improved sentence (translation)] or none`;
+  const prompt=`You are a Korean language tutor for an upper-intermediate learner. The target word is "${ko}" (${en}).\n\nThe learner wrote this Korean sentence:\n"${answer}"\n\nEvaluate in 3 parts, be concise:\n1. SCORE: one of — great / good / needs work\n2. FEEDBACK: 1-2 sentences on grammar, naturalness, or word usage. Be specific.\n3. SUGGESTION: If score is not "great", rewrite the sentence more naturally. The suggestion MUST use the target word "${ko}". (Korean only, then translation in parentheses). If great, skip this.\n\nReply in this exact format:\nSCORE: [great/good/needs work]\nFEEDBACK: [your feedback]\nSUGGESTION: [improved sentence using ${ko} (translation)] or none`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -660,6 +660,13 @@ async function getAiFeedback(phase,ko,en){
     const existing=arr.find(s=>s.ko===ko);
     if(existing){existing.score=scoreLabel;}
     else{arr.push({ko,en,sentence:answer,score:scoreLabel});}
+    // Re-queue word if it needs work
+    if(scoreLabel==='needs work'){
+      const w=sessionQueue[sessIdx];
+      if(w&&!sessionQueue.slice(sessIdx+1).find(q=>q.ko===ko)){
+        sessionQueue.push(w);
+      }
+    }
     const skipBtn=document.getElementById(phase==='use'?'use-skip':'seal-skip');
     if(skipBtn) skipBtn.innerHTML='next '+SVG_ARROW_RIGHT;
   }catch(e){

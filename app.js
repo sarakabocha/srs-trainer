@@ -175,7 +175,6 @@ function toggleSection(bodyId,iconId,cardId){
   document.getElementById(cardId).classList.toggle('collapsed',!opening);
 }
 function toggleThemeCard(){toggleSection('theme-body','theme-toggle-btn','theme-card');}
-function toggleAddWords(){toggleSection('add-words-body','add-words-toggle-btn','add-words-card');}
 
 // — UI Rendering: Themes —
 
@@ -260,31 +259,21 @@ function renderHardList(hard){
 
 // — UI Rendering: Word Bank —
 
-function toggleWordBank(){
-  const el=document.getElementById('word-bank-list');
-  const show=el.classList.contains('hidden');
-  el.classList.toggle('hidden');
-  const icon=document.getElementById('word-bank-toggle-btn');
-  icon.innerHTML=show?SVG_CHEVRON_DOWN:SVG_CHEVRON_RIGHT;
-  document.getElementById('word-bank-card').classList.toggle('collapsed',!show);
-  if(show){
-    const words=Object.values(db.words);
-    if(!words.length){el.innerHTML='<div class="muted">No words yet.</div>';return;}
-    el.innerHTML=wordRowsHtml(words);
-  }
-}
 
 function wordRowHtml(w){
   return`<div class="word-row" id="wr-${esc(w.ko)}"><span class="wb-ko">${esc(w.ko)}</span><span class="wb-en">${esc(w.en)}</span><span class="wb-date">${w.nextReview?'next: '+esc(w.nextReview):'new'}</span><button class="del-btn" onclick="editWord(${escJS(w.ko)})">edit</button><button class="del-btn" onclick="deleteWord(${escJS(w.ko)})">remove</button></div>`;
 }
 function wordRowsHtml(words){return words.map(wordRowHtml).join('');}
 
-function deleteWord(ko){db=getDB();delete db.words[ko];saveDB(db);loadHome();renderWordBank();}
+function deleteWord(ko){db=getDB();delete db.words[ko];saveDB(db);renderWordBank();}
 
 function renderWordBank(){
   const el=document.getElementById('word-bank-list');
-  if(!el||el.classList.contains('hidden'))return;
+  if(!el)return;
+  db=getDB();
   const words=Object.values(db.words);
+  const countEl=document.getElementById('word-bank-count');
+  if(countEl) countEl.textContent=words.length?words.length+' words':'';
   if(!words.length){el.innerHTML='<div class="muted">No words yet.</div>';return;}
   el.innerHTML=wordRowsHtml(words);
 }
@@ -306,7 +295,7 @@ function saveEditWord(oldKo){
   if(newKo!==oldKo){delete db.words[oldKo];w.ko=newKo;}
   w.en=newEn;
   db.words[newKo]=w;
-  saveDB(db);loadHome();renderWordBank();
+  saveDB(db);renderWordBank();
 }
 
 // — Adding Words —
@@ -327,7 +316,7 @@ function addSingleWord(){
   saveDB(db);
   document.getElementById('add-ko').value='';
   document.getElementById('add-en').value='';
-  loadHome();
+  renderWordBank();
   if(getApiKey()) runGrouping();
 }
 
@@ -345,7 +334,7 @@ function addBulk(){
   document.getElementById('bulk-input').value='';
   const msg=added+' added'+(dupes.length?` — ${dupes.length} skipped (already in bank): ${dupes.join(', ')}`:'.')  ;
   showFeedback(msg);
-  toggleBulk();loadHome();
+  toggleBulk();renderWordBank();
   if(getApiKey()&&added>0) runGrouping();
 }
 
@@ -372,6 +361,7 @@ function showScreen(name){
   document.getElementById('home-screen').classList.toggle('hidden',name!=='home');
   document.getElementById('session-screen').classList.toggle('hidden',name!=='session');
   document.getElementById('done-screen').classList.toggle('hidden',name!=='done');
+  document.getElementById('words-screen').classList.toggle('hidden',name!=='words');
   const sessHeader=document.querySelector('.sess-header');
   if(name!=='session'){
     document.getElementById('phase-content').innerHTML='';
@@ -383,6 +373,11 @@ function showScreen(name){
     if(sessHeader) sessHeader.style.display='';
   }
   window.scrollTo(0,0);
+}
+
+function showWords(){
+  showScreen('words');
+  renderWordBank();
 }
 
 function renderPhaseBar(){

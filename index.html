@@ -71,33 +71,36 @@
       </div>
       <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
     </div>
-    <div class="card collapsed" id="add-words-card">
-      <div class="section-head clickable" onclick="toggleAddWords()">
-        <div class="label" style="margin:0">add words</div>
-        <span class="toggle-icon" id="add-words-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
-      </div>
-      <div id="add-words-body" class="hidden" style="margin-top:0.75rem">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <input type="text" id="add-ko" placeholder="Korean word" />
-          <input type="text" id="add-en" placeholder="Meaning / definition" />
-        </div>
-        <div class="btn-row" style="margin-top:0">
-          <button onclick="addSingleWord()" style="flex:1">add word</button>
-          <button onclick="toggleBulk()" style="flex:1" id="bulk-toggle-btn">bulk paste</button>
-        </div>
-        <div id="bulk-area" class="hidden" style="margin-top:8px">
-          <textarea id="bulk-input" placeholder="One per line:&#10;갑자기 suddenly&#10;당황하다 to be flustered&#10;어쩌면 perhaps"></textarea>
-          <button onclick="addBulk()" style="margin-top:6px;width:100%">add all</button>
-        </div>
-        <div id="add-feedback"></div>
-      </div>
+    <button onclick="showWords()" style="width:100%;padding:11px;font-size:14px;color:var(--text-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);background:transparent;margin-top:0.25rem">manage words</button>
+  </div>
+
+  <div id="words-screen" class="hidden">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+      <button onclick="goHome()" style="font-size:13px;padding:6px 12px;color:var(--text-secondary)">← back</button>
+      <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)">manage words</span>
     </div>
-    <div class="card collapsed" id="word-bank-card">
-      <div class="section-head clickable" onclick="toggleWordBank()">
-        <div class="label" style="margin:0">word bank</div>
-        <span class="toggle-icon" id="word-bank-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+    <div class="card">
+      <div class="label">add words</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input type="text" id="add-ko" placeholder="Korean word" />
+        <input type="text" id="add-en" placeholder="Meaning / definition" />
       </div>
-      <div id="word-bank-list" class="hidden"></div>
+      <div class="btn-row" style="margin-top:0">
+        <button onclick="addSingleWord()" style="flex:1">add word</button>
+        <button onclick="toggleBulk()" style="flex:1" id="bulk-toggle-btn">bulk paste</button>
+      </div>
+      <div id="bulk-area" class="hidden" style="margin-top:8px">
+        <textarea id="bulk-input" placeholder="One per line:&#10;갑자기 suddenly&#10;당황하다 to be flustered&#10;어쩌면 perhaps"></textarea>
+        <button onclick="addBulk()" style="margin-top:6px;width:100%">add all</button>
+      </div>
+      <div id="add-feedback"></div>
+    </div>
+    <div class="card">
+      <div class="section-head">
+        <div class="label" style="margin:0">word bank</div>
+        <span class="muted" id="word-bank-count"></span>
+      </div>
+      <div id="word-bank-list"></div>
     </div>
   </div>
 

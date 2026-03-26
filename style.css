@@ -464,6 +464,8 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   .flashcard-word { font-size: 32px; }
   .card { padding: 1rem; }
   .section-head.clickable { margin: -1rem; padding: 1rem; margin-bottom: 0; }
+  #phase-content { font-size: 14px; }
+  #phase-content .label { font-size: 11px; }
   button { padding: 10px 14px; -webkit-tap-highlight-color: transparent; }
   button:active { transform: scale(0.97); }
   #start-btn:active { transform: scale(0.97); }
@@ -495,7 +497,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
     display: flex;
     flex-direction: column;
     min-height: calc(100vh - 2rem);
-    min-height: calc(100dvh - 2rem);
+    min-height: calc(100svh - 2rem);
   }
   #phase-content {
     flex: 1;

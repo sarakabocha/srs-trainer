@@ -409,21 +409,21 @@ function renderSessionPhase(){
       <div class="session-body">
         <div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div>
         <div style="text-align:center;padding:0.5rem 0 0.25rem">
-          <div style="font-size:13px;color:var(--text-secondary);margin-bottom:0.25rem">how do you say</div>
+          <div style="font-size:14px;color:var(--text-secondary);margin-bottom:0.25rem">how do you say</div>
           <div style="font-size:28px;font-weight:500;color:var(--text);line-height:1.3">${esc(w.en)}</div>
-          <div style="font-size:13px;color:var(--text-secondary);margin-top:4px">in Korean?</div>
+          <div style="font-size:14px;color:var(--text-secondary);margin-top:4px">in Korean?</div>
         </div>
         ${hasSpeech?`
         <button class="mic-btn" id="mic-btn" onclick="startVoice(${escJS(w.ko)})">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary)"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
         </button>
-        <div id="voice-status" style="text-align:center;font-size:13px;color:var(--text-secondary);min-height:20px;margin-bottom:0.75rem">tap mic or type below</div>`
+        <div id="voice-status" style="text-align:center;font-size:14px;color:var(--text-secondary);min-height:20px;margin-bottom:0.75rem">tap mic or type below</div>`
         :''}
         <div class="type-input-wrap"><input class="type-input" id="type-ans" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>
         <div id="type-result" style="min-height:20px;margin-top:0.5rem"></div>
       </div>
       <div class="session-actions" style="display:flex;justify-content:flex-end">
-        <button onclick="skipRecall()" style="font-size:13px">skip ${SVG_ARROW_RIGHT}</button>
+        <button onclick="skipRecall()" style="font-size:14px">skip ${SVG_ARROW_RIGHT}</button>
       </div>
     </div>`;
     setTimeout(()=>{
@@ -470,7 +470,7 @@ function nextWord(){
 
 function revealMeaning(){
   const w=sessionQueue[sessIdx];
-  document.getElementById('reveal-area').innerHTML=`<div class="answer-box"><span style="font-size:17px;font-weight:500;color:var(--teal)">${esc(w.en)}</span>${w.hardCount>0?`<div class="muted" style="margin-top:4px;font-size:12px">flagged hard ${w.hardCount}x</div>`:''}</div>`;
+  document.getElementById('reveal-area').innerHTML=`<div class="answer-box" style="text-align:center"><span style="font-size:17px;font-weight:500;color:var(--teal)">${esc(w.en)}</span>${w.hardCount>0?`<div class="muted" style="margin-top:4px;font-size:12px">flagged hard ${w.hardCount}x</div>`:''}</div>`;
   document.getElementById('rate-area').classList.remove('hidden');
 }
 

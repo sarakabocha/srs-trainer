@@ -13,7 +13,7 @@
     <div class="app-sub">spaced repetition trainer</div>
     <div style="margin-left:auto;position:relative">
       <button id="menu-btn" onclick="toggleMenu()" style="padding:6px 10px;font-size:18px;line-height:1;border-radius:var(--radius-md);border:0.5px solid var(--border);color:var(--text-secondary)" title="More options">···</button>
-      <div id="dropdown-menu" class="hidden" style="position:absolute;right:0;top:calc(100% + 6px);background:var(--bg);border:0.5px solid var(--border-hover);border-radius:var(--radius-lg);padding:6px;min-width:220px;z-index:100">
+      <div id="dropdown-menu" class="hidden" style="position:absolute;right:0;top:calc(100% + 6px);background:var(--bg);border:0.5px solid var(--border-hover);border-radius:var(--radius-lg);padding:6px;min-width:220px;z-index:100;box-shadow:0 8px 30px rgba(0,0,0,0.12)">
         <button onclick="exportData()" style="width:100%;text-align:left;padding:8px 12px;border:none;border-radius:var(--radius-md);font-size:14px;display:block">export progress</button>
         <button onclick="document.getElementById('import-input').click()" style="width:100%;text-align:left;padding:8px 12px;border:none;border-radius:var(--radius-md);font-size:14px;display:block">import progress</button>
         <input type="file" id="import-input" accept=".json" class="hidden" onchange="importData(event)" />
@@ -31,7 +31,7 @@
     <div class="streak-row">
       <div class="streak-flame" id="streak-num">0</div>
       <span class="muted">day streak</span>
-      <span style="margin-left:auto;font-size:13px;color:var(--text-secondary)" id="last-session-label"></span>
+      <span id="last-session-label"></span>
     </div>
     <div class="stat-grid">
       <div class="stat"><div class="n" id="s-total">0</div><div class="l">total words</div></div>
@@ -41,7 +41,7 @@
     </div>
     <div class="card">
       <div class="label">today's queue</div>
-      <div id="due-summary" style="font-size:15px;color:var(--text);margin:6px 0 .75rem;line-height:1.5"></div>
+      <div id="due-summary" style="margin:6px 0 .75rem"></div>
       <div id="theme-filter" style="display:none;margin-bottom:0.75rem">
         <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">filter by theme</div>
         <div id="theme-filter-btns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
@@ -115,7 +115,7 @@
 
   <div id="done-screen" class="hidden">
     <div class="card" style="text-align:center;padding:2rem 1.25rem">
-      <div style="font-size:22px;font-weight:500;color:var(--text);margin-bottom:6px">세션 완료</div>
+      <div style="font-size:24px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:-0.02em">세션 완료</div>
       <div class="muted" style="margin-bottom:1.25rem;line-height:1.6" id="done-msg"></div>
       <div class="stat-grid" id="done-stats" style="margin-bottom:1.25rem"></div>
       <button class="btn-full" onclick="goHome()">back to home</button>

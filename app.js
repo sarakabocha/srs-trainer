@@ -465,6 +465,9 @@ function nextWord(){
     sessPhase++;
     sessIdx=0;
     sessionContexts=[];
+    // Deduplicate queue — remove retry copies from the previous phase
+    const seen=new Set();
+    sessionQueue=sessionQueue.filter(w=>{if(seen.has(w.ko))return false;seen.add(w.ko);return true;});
   }
   if(sessPhase>3){endSession();return;}
   renderSessionPhase();

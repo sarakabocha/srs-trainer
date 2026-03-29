@@ -83,27 +83,27 @@ function renderApiKeySection(){
   if(has){
     el.innerHTML=`
       <div style="display:flex;align-items:center;gap:8px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:8px 10px;margin-bottom:6px">
-        <span style="font-size:13px;color:var(--teal);flex:1">key saved ✓</span>
+        <span style="font-size:var(--fs-body-sm);color:var(--teal);flex:1">key saved ✓</span>
       </div>
       <div style="display:flex;gap:6px">
-        <button onclick="startReplaceKey()" style="flex:1;font-size:12px;padding:6px 8px">replace</button>
-        <button onclick="removeApiKey()" style="flex:1;font-size:12px;padding:6px 8px;color:var(--color-text-danger, #E24B4A);border-color:var(--color-border-danger, #E24B4A)">remove</button>
+        <button onclick="startReplaceKey()" style="flex:1;font-size:var(--fs-meta);padding:6px 8px">replace</button>
+        <button onclick="removeApiKey()" style="flex:1;font-size:var(--fs-meta);padding:6px 8px;color:var(--color-text-danger, #E24B4A);border-color:var(--color-border-danger, #E24B4A)">remove</button>
       </div>
       <div id="api-key-replace" class="hidden" style="margin-top:8px">
         <div style="display:flex;gap:6px">
-          <input type="password" id="api-key-input" placeholder="sk-ant-..." style="flex:1;font-size:13px;padding:7px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border-hover);background:transparent;color:var(--text);font-family:var(--font-ui)" />
-          <button onclick="saveApiKey()" style="white-space:nowrap;font-size:12px;padding:7px 10px">save</button>
+          <input type="password" id="api-key-input" placeholder="sk-ant-..." style="flex:1;font-size:var(--fs-body-sm);padding:7px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border-hover);background:transparent;color:var(--text);font-family:var(--font-ui)" />
+          <button onclick="saveApiKey()" style="white-space:nowrap;font-size:var(--fs-meta);padding:7px 10px">save</button>
         </div>
-        <div id="api-key-status" style="font-size:12px;margin-top:4px;min-height:14px;color:var(--teal)"></div>
+        <div id="api-key-status" style="font-size:var(--fs-meta);margin-top:4px;min-height:14px;color:var(--teal)"></div>
       </div>`;
   } else {
     el.innerHTML=`
-      <div style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin-bottom:8px">Enables AI feedback, story generation, and theme grouping.</div>
+      <div style="font-size:var(--fs-meta);color:var(--text-secondary);line-height:1.5;margin-bottom:8px">Enables AI feedback, story generation, and theme grouping.</div>
       <div style="display:flex;gap:6px">
-        <input type="password" id="api-key-input" placeholder="sk-ant-..." style="flex:1;font-size:13px;padding:7px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border-hover);background:transparent;color:var(--text);font-family:var(--font-ui)" />
-        <button onclick="saveApiKey()" style="white-space:nowrap;font-size:12px;padding:7px 10px">save</button>
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." style="flex:1;font-size:var(--fs-body-sm);padding:7px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border-hover);background:transparent;color:var(--text);font-family:var(--font-ui)" />
+        <button onclick="saveApiKey()" style="white-space:nowrap;font-size:var(--fs-meta);padding:7px 10px">save</button>
       </div>
-      <div id="api-key-status" style="font-size:12px;margin-top:4px;min-height:14px;color:var(--teal)"></div>`;
+      <div id="api-key-status" style="font-size:var(--fs-meta);margin-top:4px;min-height:14px;color:var(--teal)"></div>`;
   }
 }
 
@@ -156,7 +156,7 @@ function renderSessionSizes(dueCount){
   el.innerHTML=SESSION_SIZES.map(n=>{
     const label=n===0?'all':String(n);
     const active=(sessionSize===n)||(n===0&&sessionSize>=dueCount);
-    return`<button class="theme-pill${active?' active':''}" onclick="setSessionSize(${n})" style="padding:3px 10px;font-size:12px">${label}</button>`;
+    return`<button class="theme-pill${active?' active':''}" onclick="setSessionSize(${n})" style="padding:3px 10px;font-size:var(--fs-meta)">${label}</button>`;
   }).join('');
 }
 
@@ -188,11 +188,11 @@ function renderThemes(){
   const filterBtns=document.getElementById('theme-filter-btns');
 
   if(!key){
-    themeEl.innerHTML=`<div class="muted" style="font-size:13px">Add an API key in the ··· menu to enable theme grouping.</div>`;
+    themeEl.innerHTML=`<div class="muted" style="font-size:var(--fs-body-sm)">Add an API key in the ··· menu to enable theme grouping.</div>`;
     filterEl.style.display='none';return;
   }
   if(!themed.length){
-    themeEl.innerHTML=`<div class="muted" style="font-size:13px">${words.length?'Click refresh to group your words by theme.':'Add words to get started.'}</div>`;
+    themeEl.innerHTML=`<div class="muted" style="font-size:var(--fs-body-sm)">${words.length?'Click refresh to group your words by theme.':'Add words to get started.'}</div>`;
     filterEl.style.display='none';return;
   }
   const groups={};
@@ -254,7 +254,7 @@ function renderHardList(hard){
   const el=document.getElementById('hard-list');
   document.getElementById('hard-count-label').textContent=hard.length?hard.length+' words':'';
   if(!hard.length){el.innerHTML='<div class="muted">No words flagged as hard yet.</div>';return;}
-  el.innerHTML=hard.map(w=>`<div class="hard-row"><span style="font-size:15px">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:13px">${esc(w.en)}</span><span class="badge badge-hard" style="margin-left:auto">${w.hardCount}x hard</span></div>`).join('');
+  el.innerHTML=hard.map(w=>`<div class="hard-row"><span style="font-size:var(--fs-body)">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:var(--fs-body-sm)">${esc(w.en)}</span><span class="badge badge-hard" style="margin-left:auto">${w.hardCount}x hard</span></div>`).join('');
 }
 
 // — UI Rendering: Word Bank —
@@ -283,7 +283,7 @@ function editWord(ko){
   const row=document.getElementById('wr-'+ko);
   if(!row)return;
   row.style.cssText='display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:0.5px solid var(--border)';
-  row.innerHTML=`<input type="text" id="edit-ko" value="${esc(w.ko)}" style="flex:1;font-size:14px;padding:6px 8px" /><input type="text" id="edit-en" value="${esc(w.en)}" style="flex:1;font-size:13px;padding:6px 8px" /><button class="del-btn" onclick="saveEditWord(${escJS(ko)})" style="font-weight:500;color:var(--teal)">save</button><button class="del-btn" onclick="renderWordBank()">cancel</button>`;
+  row.innerHTML=`<input type="text" id="edit-ko" value="${esc(w.ko)}" style="flex:1;font-size:var(--fs-body);padding:6px 8px" /><input type="text" id="edit-en" value="${esc(w.en)}" style="flex:1;font-size:var(--fs-body-sm);padding:6px 8px" /><button class="del-btn" onclick="saveEditWord(${escJS(ko)})" style="font-weight:500;color:var(--teal)">save</button><button class="del-btn" onclick="renderWordBank()">cancel</button>`;
   document.getElementById('edit-ko')?.focus();
 }
 
@@ -409,21 +409,21 @@ function renderSessionPhase(){
       <div class="session-body">
         <div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div>
         <div style="text-align:center;padding:0.5rem 0 0.25rem">
-          <div style="font-size:14px;color:var(--text-secondary);margin-bottom:0.25rem">how do you say</div>
-          <div style="font-size:28px;font-weight:500;color:var(--text);line-height:1.3">${esc(w.en)}</div>
-          <div style="font-size:14px;color:var(--text-secondary);margin-top:4px">in Korean?</div>
+          <div style="font-size:var(--fs-body);color:var(--text-secondary);margin-bottom:0.25rem">how do you say</div>
+          <div style="font-size:var(--fs-stat);font-weight:500;color:var(--text);line-height:1.3">${esc(w.en)}</div>
+          <div style="font-size:var(--fs-body);color:var(--text-secondary);margin-top:4px">in Korean?</div>
         </div>
         ${hasSpeech?`
         <button class="mic-btn" id="mic-btn" onclick="startVoice(${escJS(w.ko)})">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary)"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
         </button>
-        <div id="voice-status" style="text-align:center;font-size:14px;color:var(--text-secondary);min-height:20px;margin-bottom:0.75rem">tap mic or type below</div>`
+        <div id="voice-status" style="text-align:center;font-size:var(--fs-body);color:var(--text-secondary);min-height:20px;margin-bottom:0.75rem">tap mic or type below</div>`
         :''}
         <div class="type-input-wrap"><input class="type-input" id="type-ans" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>
         <div id="type-result" style="min-height:20px;margin-top:0.5rem"></div>
       </div>
       <div class="session-actions" style="display:flex;justify-content:flex-end">
-        <button onclick="skipRecall()" style="font-size:14px">skip ${SVG_ARROW_RIGHT}</button>
+        <button onclick="skipRecall()" style="font-size:var(--fs-body)">skip ${SVG_ARROW_RIGHT}</button>
       </div>
     </div>`;
     setTimeout(()=>{
@@ -440,11 +440,11 @@ function renderSessionPhase(){
   } else if(sessPhase===2){
     const ctx=sessionContexts[sessIdx]||(sessionContexts[sessIdx]=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en));
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="font-size:14px;line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="use-skip" onclick="skipUse()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="font-size:var(--fs-body);line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="use-skip" onclick="skipUse()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('use-ans')?.focus(),50);
   } else if(sessPhase===3){
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('seal',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="font-size:15px;color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div id="seal-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="font-size:var(--fs-body);color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div id="seal-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('seal-ans')?.focus(),50);
   }
 }
@@ -470,7 +470,7 @@ function nextWord(){
 
 function revealMeaning(){
   const w=sessionQueue[sessIdx];
-  document.getElementById('reveal-area').innerHTML=`<div class="answer-box" style="text-align:center"><span style="font-size:17px;font-weight:500;color:var(--teal)">${esc(w.en)}</span>${w.hardCount>0?`<div class="muted" style="margin-top:4px;font-size:12px">flagged hard ${w.hardCount}x</div>`:''}</div>`;
+  document.getElementById('reveal-area').innerHTML=`<div class="answer-box" style="text-align:center"><span style="font-size:var(--fs-story);font-weight:500;color:var(--teal)">${esc(w.en)}</span>${w.hardCount>0?`<div class="muted" style="margin-top:4px;font-size:var(--fs-meta)">flagged hard ${w.hardCount}x</div>`:''}</div>`;
   document.getElementById('rate-area').classList.remove('hidden');
 }
 
@@ -535,7 +535,7 @@ function endSession(){
 function scoreBadge(score){
   if(!score) return '';
   const cls=score==='great'?'score-great':score==='needs work'?'score-revise':'score-ok';
-  return `<span class="fb-score ${cls}" style="font-size:11px;padding:1px 7px">${esc(score)}</span>`;
+  return `<span class="fb-score ${cls}" style="font-size:var(--fs-xs);padding:1px 7px">${esc(score)}</span>`;
 }
 
 function renderRecap(){
@@ -552,7 +552,7 @@ function renderRecap(){
     html+=unique.map(r=>{
       const icon=r.result==='correct'?'<span style="color:var(--teal)">✓</span>':r.result==='gave-up'?'<span style="color:var(--red)">✗</span>':'<span style="color:var(--text-secondary)">—</span>';
       const label=r.result==='correct'?'recalled':r.result==='gave-up'?'gave up':'skipped';
-      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px">${icon} <span>${esc(r.ko)}</span><span class="muted">${esc(r.en)}</span><span class="muted" style="margin-left:auto">${label}</span></div>`;
+      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:var(--fs-body-sm)">${icon} <span>${esc(r.ko)}</span><span class="muted">${esc(r.en)}</span><span class="muted" style="margin-left:auto">${label}</span></div>`;
     }).join('');
     html+=`</div>`;
   }
@@ -560,14 +560,14 @@ function renderRecap(){
   // Round 3 — Use it
   if(sessUseSentences.length){
     html+=`<div class="card"><div class="label">round 3 — use it</div>`;
-    html+=sessUseSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:12px;font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:12px">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:13px;color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
+    html+=sessUseSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:var(--fs-meta);font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:var(--fs-meta)">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:var(--fs-body-sm);color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
     html+=`</div>`;
   }
 
   // Round 4 — Seal it
   if(sessSentences.length){
     html+=`<div class="card"><div class="label">round 4 — seal it</div>`;
-    html+=sessSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:12px;font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:12px">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:13px;color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
+    html+=sessSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:var(--fs-meta);font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:var(--fs-meta)">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:var(--fs-body-sm);color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
     html+=`</div>`;
   }
 
@@ -596,7 +596,7 @@ async function generateStory(){
   const out=document.getElementById('story-content');
   const key=getApiKey();
   if(!key||sessSentences.length===0){
-    if(!key) out.innerHTML=`<div class="muted" style="font-size:13px">Add an API key in the ··· menu to generate a story.</div>`;
+    if(!key) out.innerHTML=`<div class="muted" style="font-size:var(--fs-body-sm)">Add an API key in the ··· menu to generate a story.</div>`;
     else document.getElementById('story-card').classList.add('hidden');
     return;
   }
@@ -650,7 +650,7 @@ async function getAiFeedback(phase,ko,en){
     const scoreClass=score.includes('great')?'score-great':score.includes('needs')?'score-revise':'score-ok';
     const scoreLabel=score.includes('great')?'great':score.includes('needs')?'needs work':'good';
     let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div style="color:var(--text)">${esc(feed)}</div>`;
-    if(sugg&&sugg.toLowerCase()!=='none')html+=`<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border);font-size:13px"><span style="font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:4px;color:var(--text-secondary)">suggestion</span><span style="color:var(--text)">${esc(sugg)}</span></div>`;
+    if(sugg&&sugg.toLowerCase()!=='none')html+=`<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border)"><div class="fb-label">suggestion</div><div style="color:var(--text)">${esc(sugg)}</div></div>`;
     html+=`</div>`;
     document.getElementById(outId).innerHTML=html;
     // Store score on the corresponding sentence record
@@ -818,7 +818,7 @@ function checkTypedAnswer(expectedKo){
     result.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="advancePhase()" style="border-color:var(--teal);color:var(--teal)">correct →</button></div>`;
   } else {
     input.style.color='var(--red)';
-    result.innerHTML=`<div style="text-align:center;font-size:13px;color:var(--text-secondary);margin-top:4px">not quite — try again or <button class="del-btn" onclick="giveUpTyped(${escJS(expectedKo)})" style="font-size:13px;color:var(--text-secondary);text-decoration:underline;padding:0">give up</button></div>`;
+    result.innerHTML=`<div style="text-align:center;font-size:var(--fs-body-sm);color:var(--text-secondary);margin-top:4px">not quite — try again or <button class="del-btn" onclick="giveUpTyped(${escJS(expectedKo)})" style="font-size:var(--fs-body-sm);color:var(--text-secondary);text-decoration:underline;padding:0">give up</button></div>`;
     setTimeout(()=>{input.style.color='var(--text)';},600);
   }
 }

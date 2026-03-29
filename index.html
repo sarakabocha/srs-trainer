@@ -14,18 +14,18 @@
     <div style="margin-left:auto;position:relative">
       <button id="menu-btn" onclick="toggleMenu()" style="padding:6px 10px;font-size:18px;line-height:1;border-radius:var(--radius-md);border:0.5px solid var(--border);color:var(--text-secondary)" title="More options">···</button>
       <div id="dropdown-menu" class="hidden" style="position:absolute;right:0;top:calc(100% + 6px);background:var(--bg);border:0.5px solid var(--border-hover);border-radius:var(--radius-lg);padding:6px;min-width:220px;z-index:100;box-shadow:0 8px 30px rgba(0,0,0,0.12)">
-        <button onclick="exportData()" style="width:100%;text-align:left;padding:8px 12px;border:none;border-radius:var(--radius-md);font-size:14px;display:block">export progress</button>
-        <button onclick="document.getElementById('import-input').click()" style="width:100%;text-align:left;padding:8px 12px;border:none;border-radius:var(--radius-md);font-size:14px;display:block">import progress</button>
+        <button onclick="exportData()" style="width:100%;text-align:left;padding:8px 12px;border:none;border-radius:var(--radius-md);font-size:var(--fs-body);display:block">export progress</button>
+        <button onclick="document.getElementById('import-input').click()" style="width:100%;text-align:left;padding:8px 12px;border:none;border-radius:var(--radius-md);font-size:var(--fs-body);display:block">import progress</button>
         <input type="file" id="import-input" accept=".json" class="hidden" onchange="importData(event)" />
         <div class="divider"></div>
         <div style="padding:6px 12px 8px">
-          <div style="font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:8px">Anthropic API key</div>
+          <div style="font-size:var(--fs-xs);font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary);margin-bottom:8px">Anthropic API key</div>
           <div id="api-key-section"></div>
         </div>
       </div>
     </div>
   </div>
-  <div id="sync-feedback" style="font-size:13px;color:var(--teal);min-height:18px;margin-bottom:0.5rem;text-align:right"></div>
+  <div id="sync-feedback" style="font-size:var(--fs-body-sm);color:var(--teal);min-height:18px;margin-bottom:0.5rem;text-align:right"></div>
 
   <div id="home-screen">
     <div class="streak-row">
@@ -43,11 +43,11 @@
       <div class="label">today's queue</div>
       <div id="due-summary" style="margin:6px 0 .75rem"></div>
       <div id="theme-filter" style="display:none;margin-bottom:0.75rem">
-        <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">filter by theme</div>
+        <div style="font-size:var(--fs-meta);color:var(--text-secondary);margin-bottom:6px">filter by theme</div>
         <div id="theme-filter-btns" style="display:flex;flex-wrap:wrap;gap:6px"></div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:12px;color:var(--text-secondary)">words per session</span>
+        <span style="font-size:var(--fs-meta);color:var(--text-secondary)">words per session</span>
         <div id="session-size-btns" style="display:flex;gap:4px;margin-left:auto"></div>
       </div>
       <button class="btn-full" id="start-btn" onclick="startSession()">start review</button>
@@ -56,12 +56,12 @@
       <div class="section-head clickable" onclick="toggleThemeCard()">
         <div class="label" style="margin:0">themes</div>
         <div style="display:flex;align-items:center;gap:6px">
-          <button onclick="runGrouping();event.stopPropagation()" id="theme-refresh-btn" style="font-size:12px;padding:2px 8px;color:var(--text-secondary)">refresh</button>
+          <button onclick="runGrouping();event.stopPropagation()" id="theme-refresh-btn" style="font-size:var(--fs-meta);padding:2px 8px;color:var(--text-secondary)">refresh</button>
           <span class="toggle-icon" id="theme-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
         </div>
       </div>
       <div id="theme-body" class="hidden" style="margin-top:0.75rem">
-        <div id="theme-list"><div class="muted" style="font-size:13px">Add an API key and words to auto-group by theme.</div></div>
+        <div id="theme-list"><div class="muted" style="font-size:var(--fs-body-sm)">Add an API key and words to auto-group by theme.</div></div>
       </div>
     </div>
     <div class="card">
@@ -71,13 +71,13 @@
       </div>
       <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
     </div>
-    <button onclick="showWords()" style="width:100%;padding:11px;font-size:14px;color:var(--text-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);background:transparent;margin-top:0.25rem">manage words</button>
+    <button onclick="showWords()" style="width:100%;padding:11px;font-size:var(--fs-body);color:var(--text-secondary);border:0.5px solid var(--border);border-radius:var(--radius-md);background:transparent;margin-top:0.25rem">manage words</button>
   </div>
 
   <div id="words-screen" class="hidden">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
-      <button onclick="goHome()" style="font-size:13px;padding:6px 12px;color:var(--text-secondary)">← back</button>
-      <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)">manage words</span>
+      <button onclick="goHome()" style="font-size:var(--fs-body-sm);padding:6px 12px;color:var(--text-secondary)">← back</button>
+      <span style="font-size:var(--fs-xs);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)">manage words</span>
     </div>
     <div class="card">
       <div class="label">add words</div>
@@ -107,9 +107,9 @@
   <div id="session-screen" class="hidden">
     <div class="sess-header" style="display:none">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.5rem">
-        <span style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)" id="sess-round"></span>
-        <button onclick="cancelSession()" style="margin-left:auto;font-size:12px;padding:4px 10px;color:var(--text-secondary)">cancel</button>
-        <button onclick="endSessionEarly()" style="font-size:12px;padding:4px 10px;color:var(--text-secondary)">end early</button>
+        <span style="font-size:var(--fs-xs);font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)" id="sess-round"></span>
+        <button onclick="cancelSession()" style="margin-left:auto;font-size:var(--fs-meta);padding:4px 10px;color:var(--text-secondary)">cancel</button>
+        <button onclick="endSessionEarly()" style="font-size:var(--fs-meta);padding:4px 10px;color:var(--text-secondary)">end early</button>
       </div>
       <div class="phase-bar" id="phase-bar"></div>
     </div>

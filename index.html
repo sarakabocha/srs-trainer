@@ -153,6 +153,20 @@
   </div>
 </div>
 
+<div id="word-popup-overlay" class="word-popup-overlay hidden" onclick="closeWordPopup()"></div>
+<div id="word-popup" class="word-popup hidden">
+  <div class="word-popup-header">
+    <span class="word-popup-word" id="popup-word"></span>
+    <button class="del-btn" onclick="closeWordPopup()">✕</button>
+  </div>
+  <div id="popup-translation" class="word-popup-translation"></div>
+  <div class="word-popup-form">
+    <input type="text" id="popup-ko" placeholder="Korean" class="popup-input" />
+    <input type="text" id="popup-en" placeholder="Meaning" class="popup-input" />
+    <button onclick="addWordFromPopup()" class="popup-add-btn">add to word list</button>
+  </div>
+  <div id="popup-feedback" class="popup-feedback"></div>
+</div>
 <script src="app.js"></script>
 </body>
 </html>

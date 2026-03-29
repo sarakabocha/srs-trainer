@@ -753,6 +753,103 @@ function goHome(){
   loadHome();
 }
 
+// — Tappable Story Words —
+
+function makeStoryTappable(korean){
+  const parts=korean.split(/(\*\*.+?\*\*)/g);
+  let html='';
+  parts.forEach(part=>{
+    const boldMatch=part.match(/^\*\*(.+?)\*\*$/);
+    if(boldMatch){
+      const word=boldMatch[1];
+      html+=word.split(/(\s+)/).map(t=>{
+        if(!t.trim()) return t;
+        return `<span class="story-word story-tap" onclick="tapStoryWord(this)">${esc(t)}</span>`;
+      }).join('');
+    } else {
+      html+=part.split(/(\n)/).map(seg=>{
+        if(seg==='\n') return '<br>';
+        return seg.split(/(\s+)/).map(t=>{
+          if(!t.trim()) return t;
+          return `<span class="story-tap" onclick="tapStoryWord(this)">${esc(t)}</span>`;
+        }).join('');
+      }).join('');
+    }
+  });
+  return html;
+}
+
+function tapStoryWord(el){
+  const raw=el.textContent.trim();
+  const cleaned=raw.replace(/[.,!?~…\u3001\u3002\uFF0C\uFF01\uFF1F]/g,'');
+  if(!cleaned) return;
+
+  const popup=document.getElementById('word-popup');
+  const overlay=document.getElementById('word-popup-overlay');
+  document.getElementById('popup-word').textContent=raw;
+  document.getElementById('popup-ko').value=cleaned;
+  document.getElementById('popup-en').value='';
+  document.getElementById('popup-feedback').textContent='';
+  document.getElementById('popup-translation').innerHTML='';
+
+  // Check if already in word bank
+  const db=getDB();
+  if(db.words[cleaned]){
+    document.getElementById('popup-en').value=db.words[cleaned].en;
+    document.getElementById('popup-feedback').textContent='already in word list';
+    document.getElementById('popup-feedback').className='popup-feedback popup-feedback-note';
+  }
+
+  overlay.classList.remove('hidden');
+  popup.classList.remove('hidden');
+
+  // Auto-translate if API key available and word not already known
+  if(getApiKey()&&!db.words[cleaned]){
+    lookupWord(cleaned);
+  }
+}
+
+async function lookupWord(ko){
+  const key=getApiKey();
+  if(!key) return;
+  const transEl=document.getElementById('popup-translation');
+  transEl.innerHTML='<span class="ai-loading" style="margin:0;font-size:var(--fs-body-sm)">looking up...</span>';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:100,messages:[{role:'user',content:`Translate this Korean word/phrase to English. Give only the translation, concise, no extra text: "${ko}"`}]})
+    });
+    const data=await res.json();
+    if(data.error){transEl.innerHTML='';return;}
+    const translation=(data.content?.[0]?.text||'').trim();
+    if(translation){
+      transEl.innerHTML=`<span class="muted">${esc(translation)}</span>`;
+      const enInput=document.getElementById('popup-en');
+      if(!enInput.value) enInput.value=translation;
+    } else { transEl.innerHTML=''; }
+  }catch(e){ transEl.innerHTML=''; }
+}
+
+function closeWordPopup(){
+  document.getElementById('word-popup').classList.add('hidden');
+  document.getElementById('word-popup-overlay').classList.add('hidden');
+}
+
+function addWordFromPopup(){
+  const ko=document.getElementById('popup-ko').value.trim();
+  const en=document.getElementById('popup-en').value.trim();
+  const fb=document.getElementById('popup-feedback');
+  if(!ko||!en){fb.textContent='Enter both Korean and meaning.';fb.className='popup-feedback';return;}
+  db=getDB();
+  if(db.words[ko]){fb.textContent=ko+' already in word list.';fb.className='popup-feedback popup-feedback-note';return;}
+  db.words[ko]={ko,en,level:0,hardCount:0,nextReview:todayStr(),added:todayStr()};
+  saveDB(db);
+  fb.textContent=ko+' added!';
+  fb.className='popup-feedback popup-feedback-ok';
+  setTimeout(closeWordPopup,800);
+}
+
 // — AI Integration —
 
 async function generateStory(){
@@ -778,7 +875,7 @@ async function generateStory(){
     const parts=text.split(/\n---\n/);
     const korean=parts[0]?.trim()||'';
     const english=parts[1]?.trim()||'';
-    const koHtml=esc(korean).replace(/\*\*(.+?)\*\*/g,'<span class="story-word">$1</span>').replace(/\n/g,'<br>');
+    const koHtml=makeStoryTappable(korean);
     const enHtml=esc(english).replace(/\*\*(.+?)\*\*/g,'<span class="story-word">$1</span>').replace(/\n/g,'<br>');
     out.innerHTML=`<div class="story-text">${koHtml}</div>${enHtml?`<div class="story-translation">${enHtml}</div>`:''}`;
     saveCurrentStory(korean,english,sessUseSentences);
@@ -1092,7 +1189,7 @@ function renderStoriesList(){
     return;
   }
   listEl.innerHTML=stories.map(s=>{
-    const koHtml=esc(s.korean).replace(/\*\*(.+?)\*\*/g,'<span class="story-word">$1</span>').replace(/\n/g,'<br>');
+    const koHtml=makeStoryTappable(s.korean);
     const enHtml=s.english?esc(s.english).replace(/\*\*(.+?)\*\*/g,'<span class="story-word">$1</span>').replace(/\n/g,'<br>'):'';
     const wordChips=s.words?s.words.map(w=>`<span class="theme-pill">${esc(w.ko)}</span>`).join(' '):'';
     return `<div class="card story-saved-card">

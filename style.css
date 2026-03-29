@@ -93,6 +93,8 @@ body {
 #home-screen > :nth-child(5) { animation-delay: 0.2s; }
 #home-screen > :nth-child(6) { animation-delay: 0.25s; }
 
+#phase-content > * { animation: fadeIn 0.25s ease-out both; }
+
 /* — Header — */
 
 .app-header {
@@ -189,7 +191,7 @@ button:disabled { opacity: 0.35; cursor: not-allowed; }
 .btn-full {
   width: 100%;
   padding: 14px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
 }
@@ -200,7 +202,7 @@ button:disabled { opacity: 0.35; cursor: not-allowed; }
   border: none;
   border-radius: var(--radius-md);
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   padding: 14px;
   box-shadow: none;
   transition: all 0.25s ease;
@@ -496,8 +498,8 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   #session-screen {
     display: flex;
     flex-direction: column;
-    min-height: calc(100vh - 2rem);
-    min-height: calc(100svh - 2rem);
+    min-height: calc(100vh - 10rem);
+    min-height: calc(100svh - 10rem);
   }
   #phase-content {
     flex: 1;

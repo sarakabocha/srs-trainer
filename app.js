@@ -359,14 +359,17 @@ async function startSession(){
   sessIdx=0;sessPhase=0;sessRatings=[];sessionContexts=[];sessRecallResults=[];sessPairResults=[];sessCollocations={};sessUseSentences=[];
   dbSnapshot=JSON.stringify(db);
   showScreen('session');
+  const endBtn=document.getElementById('end-early-btn');
   // Load collocations if API key available
   if(getApiKey()){
+    if(endBtn) endBtn.classList.add('hidden');
     document.getElementById('phase-content').innerHTML=`<div class="card session-loading"><div class="ai-loading">preparing session...</div></div>`;
     const ok=await loadCollocations(sessionQueue);
     phaseMap=ok?['see','say','pair','use']:['see','say','use'];
   } else {
     phaseMap=['see','say','use'];
   }
+  if(endBtn) endBtn.classList.remove('hidden');
   renderSessionPhase();
 }
 

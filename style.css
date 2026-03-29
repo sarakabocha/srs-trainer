@@ -266,6 +266,11 @@ textarea { resize: none; min-height: 72px; }
   border-radius: var(--radius-md);
   padding: 1rem;
   margin: 1rem 0;
+  animation: fadeUp 0.3s ease-out both;
+}
+
+.rate-area-reveal {
+  animation: fadeUp 0.3s ease-out 0.1s both;
 }
 
 .rate-row { display: flex; gap: 8px; margin-top: 1rem; }
@@ -502,20 +507,21 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
 .story-text { font-family: var(--font-ui); font-size: var(--fs-body); line-height: 2; color: var(--text); }
 .story-translation { font-size: var(--fs-body-sm); line-height: 1.8; color: var(--text-secondary); margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
 .story-word { font-weight: 600; color: var(--teal); }
-.sentence-chip { font-size: var(--fs-body-sm); color: var(--text-secondary); padding: 6px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 6px; line-height: 1.5; }
-.sentence-chip .chip-word { font-weight: 500; color: var(--text); font-size: var(--fs-xs); margin-bottom: 2px; }
+.sentence-chip { font-size: var(--fs-body); color: var(--text-secondary); padding: 8px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 6px; line-height: 1.5; }
+.sentence-chip .chip-word { font-weight: 500; color: var(--text); font-size: var(--fs-body-sm); margin-bottom: 2px; }
 #recap-section .card > div:last-child { border-bottom: none; }
-.recap-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: var(--fs-body-sm); }
+.recap-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: var(--fs-body); }
 .recap-summary { margin-bottom: 8px; }
 .recap-icon { font-weight: 500; }
 .recap-icon-ok { color: var(--teal); }
 .recap-icon-fail { color: var(--red); }
 .recap-icon-skip { color: var(--text-secondary); }
 .recap-sentence { padding: 6px 0; border-bottom: 0.5px solid var(--border); }
-.recap-sentence-head { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
-.recap-sentence-head .word { font-size: var(--fs-xs); font-weight: 500; }
-.recap-sentence-head .def { font-size: var(--fs-xs); color: var(--text-secondary); }
-.recap-sentence-body { font-size: var(--fs-body-sm); color: var(--text); }
+.recap-sentence-head { display: flex; align-items: baseline; gap: 6px; margin-bottom: 3px; flex-wrap: wrap; }
+.recap-sentence-head .word { font-size: var(--fs-body); font-weight: 500; }
+.recap-sentence-head .def { font-size: var(--fs-body-sm); color: var(--text-secondary); }
+.recap-sentence-head .fb-score { vertical-align: baseline; }
+.recap-sentence-body { font-size: var(--fs-body); color: var(--text); }
 
 /* — Themes — */
 
@@ -627,7 +633,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   .card { padding: 1rem; }
   .section-head.clickable { margin: -1rem; padding: 1rem; margin-bottom: 0; }
   #phase-content { font-size: var(--fs-body); }
-  #phase-content .label { font-size: var(--fs-body-sm); }
   button { padding: 10px 14px; -webkit-tap-highlight-color: transparent; }
   button:active { transform: scale(0.97); }
   #start-btn:active { transform: scale(0.97); }

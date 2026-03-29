@@ -24,6 +24,7 @@ const SESSION_SIZES=[5,10,15,0];
 const SVG_CHEVRON_RIGHT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
 const SVG_CHEVRON_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
 const SVG_ARROW_RIGHT='<svg class="svg-icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+const SVG_CHECK='<svg class="svg-icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const MIC_ICON=`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`;
 const MIC_ICON_ACTIVE=`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`;
 
@@ -492,19 +493,17 @@ function renderSessionPhase(){
   } else if(phase==='use'){
     const remaining = sessionQueue.length - sessIdx - 1;
     const ctx = sessionContexts[sessIdx] || (sessionContexts[sessIdx] = CONTEXTS[Math.floor(Math.random() * CONTEXTS.length)](w.ko, w.en));
-    const aiFbBtn = getApiKey()
-      ? `<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile ? '' : ' <kbd>⌘↵</kbd>'}</button>`
-      : '';
+    const hasKey = !!getApiKey();
     el.innerHTML =
       `<div class="card"><div class="session-body">` +
       `<div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
       `<div class="prompt-text prompt-context">${esc(ctx)}</div>` +
       `<textarea id="use-ans" placeholder="Write in Korean..."></textarea>` +
+      `${hasKey?`<button class="btn-full mt-sm" onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:''}` +
       `<div id="use-ai-feedback"></div>` +
-      `</div><div class="session-actions"><div class="btn-row">` +
-      `${aiFbBtn}` +
-      `<button id="use-skip" onclick="skipUse()" class="ml-auto">skip ${SVG_ARROW_RIGHT}</button>` +
-      `</div></div></div>`;
+      `</div><div class="session-actions session-actions-end">` +
+      `<button id="use-skip" onclick="skipUse()">skip ${SVG_ARROW_RIGHT}</button>` +
+      `</div></div>`;
     setTimeout(() => document.getElementById('use-ans')?.focus(), 50);
   }
 }
@@ -531,7 +530,9 @@ function nextWord(){
 function revealMeaning(){
   const w=sessionQueue[sessIdx];
   document.getElementById('reveal-area').innerHTML=`<div class="answer-box text-center"><span class="reveal-answer">${esc(w.en)}</span>${w.hardCount>0?`<div class="muted reveal-hard">flagged hard ${w.hardCount}x</div>`:''}</div>`;
-  document.getElementById('rate-area').classList.remove('hidden');
+  const rateArea=document.getElementById('rate-area');
+  rateArea.classList.remove('hidden');
+  rateArea.classList.add('rate-area-reveal');
 }
 
 
@@ -543,6 +544,13 @@ function rateWord(rating){
   saveDB(db);sessRatings.push({ko:w.ko,rating});
   if(rating==='hard') sessionQueue.push(w);
   nextWord();
+}
+
+function showSayNext(){
+  const typeResult=document.getElementById('type-result');
+  if(typeResult) typeResult.innerHTML=`<div class="pair-feedback correct text-center">correct ${SVG_CHECK}</div>`;
+  const actions=document.querySelector('.session-actions');
+  if(actions) actions.innerHTML=`<button onclick="advancePhase()" class="ml-auto">next${isMobile?'':' <kbd>space</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 
 function advancePhase(){
@@ -630,7 +638,7 @@ function selectCollocation(ko,chosenKo){
   });
   const resultEl=document.getElementById('pair-result');
   if(gotIt){
-    resultEl.innerHTML=`<div class="pair-feedback correct">correct</div>`;
+    resultEl.innerHTML=`<div class="pair-feedback correct">correct ${SVG_CHECK}</div>`;
   } else {
     resultEl.innerHTML=`<div class="pair-feedback wrong">the odd one out was ${esc(coll.wrong.ko)} (${esc(coll.wrong.en)})</div>`;
   }
@@ -919,7 +927,7 @@ function startVoice(expectedKo){
     if(correct){
       if(input) input.style.color='var(--teal)';
       if(status) status.textContent='';
-      if(typeResult) typeResult.innerHTML=`<div class="btn-action-row"><button class="btn-correct" onclick="advancePhase()">correct →</button></div>`;
+      showSayNext();
     } else {
       if(input) input.style.color='var(--text)';
       if(status) status.textContent='not quite';
@@ -961,7 +969,7 @@ function checkTypedAnswer(expectedKo){
   if(correct){
     input.disabled=true;
     input.style.color='var(--teal)';
-    result.innerHTML=`<div class="btn-action-row"><button class="btn-correct" onclick="advancePhase()">correct →</button></div>`;
+    showSayNext();
   } else {
     input.style.color='var(--red)';
     result.innerHTML=`<div class="give-up-text">not quite — try again or <button class="del-btn give-up-link" onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
@@ -976,7 +984,9 @@ function giveUpTyped(expectedKo){
   const w=sessionQueue[sessIdx];
   sessRecallResults.push({ko:w.ko,en:w.en,result:'gave-up'});
   sessionQueue.push(w);
-  if(result) result.innerHTML=`<div class="btn-action-row"><button onclick="nextWord()">next →</button></div>`;
+  if(result) result.innerHTML='';
+  const actions=document.querySelector('.session-actions');
+  if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>space</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 
 // — Keyboard Shortcuts —
@@ -1002,8 +1012,9 @@ document.addEventListener('keydown',function(e){
   if(e.key===' '||e.code==='Space'){
     e.preventDefault();
     if(phase==='say'){
-      const w=sessionQueue[sessIdx];
-      if(w) startVoice(w.ko);
+      const ti=document.getElementById('type-ans');
+      if(ti&&ti.disabled) { const btn=document.querySelector('.session-actions button'); if(btn) btn.click(); }
+      else { const w=sessionQueue[sessIdx]; if(w) startVoice(w.ko); }
     } else if(phase==='pair'){
       const allDisabled=!document.querySelector('.pair-option:not(:disabled)');
       if(allDisabled) nextWord();

@@ -633,7 +633,8 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
 
 @media (max-width: 480px) {
   body { padding: 1rem 0.75rem; }
-  .app-header { margin-bottom: 1rem; }
+  .app-header { margin-bottom: 1rem; flex-direction: column; align-items: flex-start; gap: 2px; }
+  .menu-wrap { position: absolute; right: 0; top: 0; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
   .stat .n { font-size: var(--fs-heading); }
   .flashcard-word { font-size: 32px; }

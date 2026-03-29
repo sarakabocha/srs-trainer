@@ -50,8 +50,8 @@ Each review session cycles through **4 rounds**, processing all words in each ro
 |-------|------|-------------|
 | 1 | See it | Korean word shown, reveal meaning, self-rate: knew it / vaguely / forgot |
 | 2 | Say it | English shown, speak Korean word into mic (Web Speech API) |
-| 3 | Use it | Write a sentence using the word (12 rotating prompts) |
-| 4 | Seal it | Write one personal sentence using the word (feeds end-of-session story) |
+| 3 | Pair it | Multiple choice — pick the natural collocation for the word (requires API key) |
+| 4 | Use it | Write a sentence using the word (12 rotating prompts, feeds end-of-session story) |
 
 Sessions default to 5 words. Hard words are prioritised, then shuffled randomly within each group.
 
@@ -107,7 +107,7 @@ All AI features require an Anthropic API key (`sk-ant-...`) saved via the `··�
 | Feature | Trigger | Description |
 |---------|---------|-------------|
 | AI feedback | Button in rounds 3 & 4 (or `⌘↵`) | Scores the sentence (great / good / needs work), gives specific feedback, suggests a rewrite |
-| End-of-session story | Auto on session complete | Weaves all seal-it sentences into a short absurd/funny Korean story with English translation. Vocab words highlighted in teal |
+| End-of-session story | Auto on session complete | Weaves all use-it sentences into a short absurd/funny Korean story with English translation. Vocab words highlighted in teal |
 | Theme grouping | Auto on word add, or manual refresh | Clusters entire word bank into 3–8 themes using a single API call, stores theme on each word |
 
 The `anthropic-dangerous-direct-browser-access: true` header is required for browser-direct API calls.
@@ -159,9 +159,10 @@ Accepts any of these separators between Korean word and definition. Commas and s
 | Key | Action |
 |-----|--------|
 | `space` | Round 1: reveal meaning. Round 2: toggle mic |
-| `1` / `2` / `3` | Rate word: knew it / vaguely / forgot |
-| `⌘↵` / `ctrl↵` | Trigger AI feedback (rounds 3 & 4) |
-| `enter` | Round 3: advance. Round 4: finish word |
+| `1` / `2` / `3` | Round 1: rate word. Round 3: select collocation option |
+| `4` | Round 3: select 4th collocation option |
+| `⌘↵` / `ctrl↵` | Trigger AI feedback (round 4) |
+| `enter` | Round 4: advance |
 
 Mobile is detected via `navigator.userAgent`. Shortcuts are suppressed inside textareas and inputs.
 

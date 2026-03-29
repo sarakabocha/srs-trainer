@@ -59,17 +59,20 @@ function findSimilar(ko){
 }
 
 function normalize(s){return s.replace(/\s+/g,'').replace(/[.,!?~]/g,'').toLowerCase();}
+function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 // — State —
 
 let activeThemeFilter=null;
 let sessionSize=5;
 let sessionQueue=[],sessIdx=0,sessPhase=0,sessRatings=[],db;
-let sessSentences=[];
 let sessionContexts=[];
-let sessRecallResults=[];  // round 2: {ko, en, result: 'correct'|'gave-up'|'skipped'}
-let sessUseSentences=[];   // round 3: {ko, en, sentence, score}
+let sessRecallResults=[];
+let sessPairResults=[];
+let sessCollocations={};
+let sessUseSentences=[];
 let dbSnapshot=null;
+let phaseMap=['see','say','use'];
 let activeRecognition=null;
 
 // — API Key —
@@ -294,6 +297,7 @@ function saveEditWord(oldKo){
   db=getDB();const w=db.words[oldKo];if(!w)return;
   if(newKo!==oldKo){delete db.words[oldKo];w.ko=newKo;}
   w.en=newEn;
+  delete w.collocations;
   db.words[newKo]=w;
   saveDB(db);renderWordBank();
 }
@@ -343,7 +347,7 @@ function showFeedback(msg){const el=document.getElementById('add-feedback');el.t
 
 // — Session Flow —
 
-function startSession(){
+async function startSession(){
   db=getDB();
   const due=Object.values(db.words).filter(isDue);
   const filtered=activeThemeFilter?due.filter(w=>w.theme===activeThemeFilter):due;
@@ -351,9 +355,17 @@ function startSession(){
   const normal=filtered.filter(w=>(w.hardCount||0)===0).sort(()=>Math.random()-0.5);
   const limit=sessionSize===0?Infinity:sessionSize;
   sessionQueue=[...hard,...normal].slice(0,limit);
-  sessIdx=0;sessPhase=0;sessRatings=[];sessSentences=[];sessionContexts=[];sessRecallResults=[];sessUseSentences=[];
+  sessIdx=0;sessPhase=0;sessRatings=[];sessionContexts=[];sessRecallResults=[];sessPairResults=[];sessCollocations={};sessUseSentences=[];
   dbSnapshot=JSON.stringify(db);
   showScreen('session');
+  // Load collocations if API key available
+  if(getApiKey()){
+    document.getElementById('phase-content').innerHTML=`<div class="card" style="text-align:center;padding:2rem"><div class="ai-loading">preparing session...</div></div>`;
+    const ok=await loadCollocations(sessionQueue);
+    phaseMap=ok?['see','say','pair','use']:['see','say','use'];
+  } else {
+    phaseMap=['see','say','use'];
+  }
   renderSessionPhase();
 }
 
@@ -382,28 +394,29 @@ function showWords(){
 
 function renderPhaseBar(){
   const bar=document.getElementById('phase-bar');bar.innerHTML='';
-  const total=4,done=sessPhase;
+  const total=phaseMap.length,done=sessPhase;
   bar.style.cssText='display:flex;gap:6px;margin-bottom:0.75rem';
   for(let i=0;i<total;i++){
     const p=document.createElement('div');
     p.style.cssText=`flex:1;height:4px;border-radius:2px;background:${i<done?'var(--teal)':i===done?'#5DCAA5':'var(--border-tertiary, rgba(0,0,0,0.12))'}`;
     bar.appendChild(p);
   }
-  const roundNames=['round 1 — see it','round 2 — say it','round 3 — use it','round 4 — seal it'];
+  const nameMap={see:'see it',say:'say it',pair:'pair it',use:'use it'};
   const el=document.getElementById('sess-round');
-  if(el) el.textContent=roundNames[sessPhase]||'';
+  if(el) el.textContent=`round ${sessPhase+1} — ${nameMap[phaseMap[sessPhase]]||''}`;
 }
 
 function renderSessionPhase(){
-  if(sessPhase>3){endSession();return;}
+  if(sessPhase>=phaseMap.length){endSession();return;}
   const w=sessionQueue[sessIdx];
   renderPhaseBar();
   const el=document.getElementById('phase-content');
-  if(sessPhase===0){
+  const phase=phaseMap[sessPhase];
+  if(phase==='see'){
     const kbdHints=isMobile?'':'<kbd>space</kbd>';
     const kbdR=isMobile?['','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>'];
     el.innerHTML=`<div class="card"><div class="session-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div class="flashcard-word" style="margin-bottom:0.5rem">${esc(w.ko)}</div><div id="reveal-area" style="width:100%"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div></div><div class="session-actions" style="padding-top:1.5rem"><div id="rate-area" class="hidden"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div></div>`;
-  } else if(sessPhase===1){
+  } else if(phase==='say'){
     const hasSpeech=('webkitSpeechRecognition' in window||'SpeechRecognition' in window);
     el.innerHTML=`<div class="card">
       <div class="session-body">
@@ -437,15 +450,17 @@ function renderSessionPhase(){
         });
       }
     },50);
-  } else if(sessPhase===2){
+  } else if(phase==='pair'){
+    const coll=sessCollocations[w.ko];
+    if(!coll){nextWord();return;}
+    const opts=shuffleArray([...coll.options]);
+    const kbdNums=isMobile?['','','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>','<kbd>4</kbd>'];
+    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="text-align:center;padding:0.5rem 0 0.25rem"><div style="font-size:var(--fs-body);color:var(--text-secondary);margin-bottom:0.25rem">what naturally pairs with</div><div class="flashcard-word" style="margin-bottom:0.25rem">${esc(w.ko)}</div><div class="muted" style="margin-bottom:1rem">${esc(w.en)}</div><div style="font-size:var(--fs-body);color:var(--text-secondary);margin-bottom:1rem">${esc(coll.prompt)}</div></div><div id="pair-options">${opts.map((o,i)=>`<button class="pair-option" onclick="selectCollocation(${escJS(w.ko)},${escJS(o.ko)})"><span class="pair-num">${kbdNums[i]||i+1}</span><span class="pair-ko">${esc(o.ko)}</span><span class="pair-en">${esc(o.en)}</span></button>`).join('')}</div><div id="pair-result" style="min-height:20px;margin-top:0.75rem"></div></div><div class="session-actions"><button onclick="skipPair()" style="margin-left:auto;font-size:var(--fs-body)">skip ${SVG_ARROW_RIGHT}</button></div></div>`;
+  } else if(phase==='use'){
     const ctx=sessionContexts[sessIdx]||(sessionContexts[sessIdx]=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en));
     const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
     el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="font-size:var(--fs-body);line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="use-skip" onclick="skipUse()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
     setTimeout(()=>document.getElementById('use-ans')?.focus(),50);
-  } else if(sessPhase===3){
-    const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('seal',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="font-size:var(--fs-body);color:var(--text);margin:8px 0 .75rem;line-height:1.6">Write one sentence using <strong style="font-weight:500">${esc(w.ko)}</strong> (${esc(w.en)}) from your own life or imagination. Then say it aloud.</div><textarea id="seal-ans" placeholder="${esc(w.ko)}..."></textarea><div id="seal-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="seal-skip" onclick="finishWord()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
-    setTimeout(()=>document.getElementById('seal-ans')?.focus(),50);
   }
 }
 
@@ -464,7 +479,7 @@ function nextWord(){
     const seen=new Set();
     sessionQueue=sessionQueue.filter(w=>{if(seen.has(w.ko))return false;seen.add(w.ko);return true;});
   }
-  if(sessPhase>3){endSession();return;}
+  if(sessPhase>=phaseMap.length){endSession();return;}
   renderSessionPhase();
 }
 
@@ -486,7 +501,7 @@ function rateWord(rating){
 }
 
 function advancePhase(){
-  if(sessPhase===1){
+  if(phaseMap[sessPhase]==='say'){
     const w=sessionQueue[sessIdx];
     sessRecallResults.push({ko:w.ko,en:w.en,result:'correct'});
   }
@@ -506,12 +521,79 @@ function skipUse(){
   nextWord();
 }
 
-function finishWord(){
-  if(sessPhase===3){
-    const ans=document.getElementById('seal-ans')?.value?.trim();
-    const w=sessionQueue[sessIdx];
-    if(ans&&!sessSentences.find(s=>s.ko===w.ko)) sessSentences.push({ko:w.ko,en:w.en,sentence:ans});
+// — Collocation loading —
+
+async function loadCollocations(words){
+  const key=getApiKey();if(!key)return false;
+  const db=getDB();
+  const uncached=[];
+  words.forEach(w=>{
+    if(db.words[w.ko]?.collocations) sessCollocations[w.ko]=db.words[w.ko].collocations;
+    else uncached.push(w);
+  });
+  if(!uncached.length) return true;
+  const wordList=uncached.map((w,i)=>`${i+1}. ${w.ko} (${w.en})`).join('\n');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:`For each Korean word below, provide one natural collocation (word pairing) and 3 plausible but incorrect alternatives. Collocations can be verb+noun, adjective+noun, or adverb+verb patterns — pick whichever is most useful for learning.
+
+Words:
+${wordList}
+
+Respond ONLY with a valid JSON array, no other text:
+[{"ko":"훈련","pattern":"noun+verb","correct":{"ko":"받다","en":"to undergo"},"prompt":"훈련을 ___","options":[{"ko":"받다","en":"to undergo"},{"ko":"등록하다","en":"to register"},{"ko":"만들다","en":"to make"},{"ko":"쓰다","en":"to write"}]}]
+
+Rules:
+- "options" must include the correct answer and 3 wrong ones (4 total)
+- Distractors must be real Korean words but NOT natural collocations with the target word
+- "prompt" should be a short fill-in-the-blank phrase showing how the collocation is used
+- Keep English translations concise`}]})
+    });
+    const data=await res.json();
+    const text=data.content?.[0]?.text||'';
+    const match=text.match(/\[[\s\S]*\]/);
+    if(!match) return Object.keys(sessCollocations).length>0;
+    const arr=JSON.parse(match[0]);
+    arr.forEach(c=>{
+      if(c.ko&&c.correct&&c.options?.length>=2){
+        sessCollocations[c.ko]=c;
+        if(db.words[c.ko]){db.words[c.ko].collocations=c;};
+      }
+    });
+    saveDB(db);
+    return Object.keys(sessCollocations).length>0;
+  }catch(e){
+    return Object.keys(sessCollocations).length>0;
   }
+}
+
+function selectCollocation(ko,chosenKo){
+  const coll=sessCollocations[ko];if(!coll)return;
+  const correct=coll.correct.ko===chosenKo;
+  const btns=document.querySelectorAll('.pair-option');
+  btns.forEach(b=>{
+    b.disabled=true;
+    const bKo=b.querySelector('.pair-ko').textContent;
+    if(bKo===coll.correct.ko) b.classList.add('correct');
+    if(bKo===chosenKo&&!correct) b.classList.add('wrong');
+  });
+  const resultEl=document.getElementById('pair-result');
+  if(correct){
+    resultEl.innerHTML=`<div style="font-size:var(--fs-body);color:var(--teal-dark)">correct — ${esc(coll.prompt.replace('___',coll.correct.ko))}</div>`;
+  } else {
+    resultEl.innerHTML=`<div style="font-size:var(--fs-body);color:var(--red-dark)">${esc(coll.prompt.replace('___',coll.correct.ko))}</div>`;
+  }
+  if(!sessPairResults.find(r=>r.ko===ko)) sessPairResults.push({ko,correct,chosen:chosenKo,answer:coll.correct.ko});
+  const w=sessionQueue[sessIdx];
+  if(!correct&&w&&!sessionQueue.slice(sessIdx+1).find(q=>q.ko===ko)) sessionQueue.push(w);
+  setTimeout(()=>nextWord(),correct?800:1500);
+}
+
+function skipPair(){
+  const w=sessionQueue[sessIdx];
+  if(!sessPairResults.find(r=>r.ko===w.ko)) sessPairResults.push({ko:w.ko,correct:false,chosen:null,answer:sessCollocations[w.ko]?.correct?.ko||'',skipped:true});
   nextWord();
 }
 
@@ -527,7 +609,7 @@ function endSession(){
   document.getElementById('done-msg').textContent=`${sessionQueue.length}개 단어 완료. Hard words come back sooner — you'll see them again before the rest.`;
   document.getElementById('done-stats').innerHTML=`<div class="stat"><div class="n">${good}</div><div class="l">knew it</div></div><div class="stat"><div class="n">${ok}</div><div class="l">vaguely</div></div><div class="stat"><div class="n">${hard}</div><div class="l">hard</div></div><div class="stat"><div class="n">${db.sessions}</div><div class="l">total sessions</div></div>`;
   const sentEl=document.getElementById('story-sentences');
-  sentEl.innerHTML=sessSentences.map(s=>`<div class="sentence-chip"><div class="chip-word">${esc(s.ko)} — ${esc(s.en)}</div>${esc(s.sentence)}</div>`).join('');
+  sentEl.innerHTML=sessUseSentences.map(s=>`<div class="sentence-chip"><div class="chip-word">${esc(s.ko)} — ${esc(s.en)}</div>${esc(s.sentence)}</div>`).join('');
   renderRecap();
   generateStory();
 }
@@ -540,14 +622,15 @@ function scoreBadge(score){
 
 function renderRecap(){
   let html='';
+  const roundNum=(name)=>phaseMap.indexOf(name)+1;
 
-  // Round 2 — Recall (show final result per word)
+  // Say it — Recall
   if(sessRecallResults.length){
     const byWord={};
     sessRecallResults.forEach(r=>{byWord[r.ko]=r;});
     const unique=Object.values(byWord);
     const correct=unique.filter(r=>r.result==='correct').length;
-    html+=`<div class="card"><div class="label">round 2 — say it</div>`;
+    html+=`<div class="card"><div class="label">round ${roundNum('say')} — say it</div>`;
     html+=`<div class="muted" style="margin-bottom:8px">${correct} of ${unique.length} recalled correctly</div>`;
     html+=unique.map(r=>{
       const icon=r.result==='correct'?'<span style="color:var(--teal)">✓</span>':r.result==='gave-up'?'<span style="color:var(--red)">✗</span>':'<span style="color:var(--text-secondary)">—</span>';
@@ -557,17 +640,27 @@ function renderRecap(){
     html+=`</div>`;
   }
 
-  // Round 3 — Use it
-  if(sessUseSentences.length){
-    html+=`<div class="card"><div class="label">round 3 — use it</div>`;
-    html+=sessUseSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:var(--fs-meta);font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:var(--fs-meta)">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:var(--fs-body-sm);color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
+  // Pair it — Collocations
+  if(sessPairResults.length){
+    const byWord={};
+    sessPairResults.forEach(r=>{byWord[r.ko]=r;});
+    const unique=Object.values(byWord);
+    const correct=unique.filter(r=>r.correct).length;
+    html+=`<div class="card"><div class="label">round ${roundNum('pair')} — pair it</div>`;
+    html+=`<div class="muted" style="margin-bottom:8px">${correct} of ${unique.length} paired correctly</div>`;
+    html+=unique.map(r=>{
+      const coll=sessCollocations[r.ko];
+      const icon=r.correct?'<span style="color:var(--teal)">✓</span>':r.skipped?'<span style="color:var(--text-secondary)">—</span>':'<span style="color:var(--red)">✗</span>';
+      const detail=coll?esc(coll.prompt.replace('___',coll.correct.ko)):'';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:var(--fs-body-sm)">${icon} <span>${esc(r.ko)}</span><span class="muted">${detail}</span></div>`;
+    }).join('');
     html+=`</div>`;
   }
 
-  // Round 4 — Seal it
-  if(sessSentences.length){
-    html+=`<div class="card"><div class="label">round 4 — seal it</div>`;
-    html+=sessSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:var(--fs-meta);font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:var(--fs-meta)">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:var(--fs-body-sm);color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
+  // Use it — Sentences
+  if(sessUseSentences.length){
+    html+=`<div class="card"><div class="label">round ${roundNum('use')} — use it</div>`;
+    html+=sessUseSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:var(--fs-meta);font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:var(--fs-meta)">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:var(--fs-body-sm);color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
     html+=`</div>`;
   }
 
@@ -595,13 +688,13 @@ function goHome(){
 async function generateStory(){
   const out=document.getElementById('story-content');
   const key=getApiKey();
-  if(!key||sessSentences.length===0){
+  if(!key||sessUseSentences.length===0){
     if(!key) out.innerHTML=`<div class="muted" style="font-size:var(--fs-body-sm)">Add an API key in the ··· menu to generate a story.</div>`;
     else document.getElementById('story-card').classList.add('hidden');
     return;
   }
   out.innerHTML=`<div class="ai-loading">concocting something ridiculous...</div>`;
-  const wordList=sessSentences.map(s=>`- "${s.sentence}" (used word: ${s.ko}, ${s.en})`).join('\n');
+  const wordList=sessUseSentences.map(s=>`- "${s.sentence}" (used word: ${s.ko}, ${s.en})`).join('\n');
   const prompt=`You are a Korean creative writing assistant with a talent for absurd, deadpan comedy. A learner wrote these sentences during vocabulary practice:\n\n${wordList}\n\nWeave them into a short funny/absurd story in Korean (4-8 sentences). The tone should be comedic — unexpected situations, dry humor, surreal logic, bizarre consequences. Rules:\n1. Include each of the learner's sentences naturally — you may lightly adjust grammar but keep their words\n2. Bold each target vocabulary word using **word** markdown\n3. Commit fully to the absurdity — the funnier the better\n4. After the Korean story, add a natural English translation starting with "---"\n\nFormat:\n[Korean story]\n---\n[English translation]`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
@@ -626,8 +719,8 @@ async function generateStory(){
 async function getAiFeedback(phase,ko,en){
   const key=getApiKey();
   if(!key){return;}
-  const ansId=phase==='use'?'use-ans':'seal-ans';
-  const outId=phase==='use'?'use-ai-feedback':'seal-ai-feedback';
+  const ansId='use-ans';
+  const outId='use-ai-feedback';
   const answer=document.getElementById(ansId)?.value?.trim();
   if(!answer){document.getElementById(outId).innerHTML=`<div class="ai-loading">Write something first.</div>`;return;}
   document.getElementById(outId).innerHTML=`<div class="ai-loading">evaluating...</div>`;
@@ -654,18 +747,16 @@ async function getAiFeedback(phase,ko,en){
     html+=`</div>`;
     document.getElementById(outId).innerHTML=html;
     // Store score on the corresponding sentence record
-    const arr=phase==='use'?sessUseSentences:sessSentences;
-    const existing=arr.find(s=>s.ko===ko);
+    const existing=sessUseSentences.find(s=>s.ko===ko);
     if(existing){existing.score=scoreLabel;}
-    else{arr.push({ko,en,sentence:answer,score:scoreLabel});}
-    // Re-queue word if it needs work
+    else{sessUseSentences.push({ko,en,sentence:answer,score:scoreLabel});}
     if(scoreLabel==='needs work'){
       const w=sessionQueue[sessIdx];
       if(w&&!sessionQueue.slice(sessIdx+1).find(q=>q.ko===ko)){
         sessionQueue.push(w);
       }
     }
-    const skipBtn=document.getElementById(phase==='use'?'use-skip':'seal-skip');
+    const skipBtn=document.getElementById('use-skip');
     if(skipBtn) skipBtn.innerHTML='next '+SVG_ARROW_RIGHT;
   }catch(e){
     document.getElementById(outId).innerHTML=`<div class="ai-loading">Could not reach API. Check your key and connection.</div>`;
@@ -841,13 +932,13 @@ document.addEventListener('keydown',function(e){
   const tag=document.activeElement.tagName;
   const inText=tag==='TEXTAREA'||tag==='INPUT';
 
+  const phase=phaseMap[sessPhase];
+
   if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){
     e.preventDefault();
     const w=sessionQueue[sessIdx];
     if(!w) return;
-    const ko=w.ko,en=w.en;
-    if(sessPhase===2) getAiFeedback('use',ko,en);
-    else if(sessPhase===3) getAiFeedback('seal',ko,en);
+    if(phase==='use') getAiFeedback('use',w.ko,w.en);
     return;
   }
 
@@ -855,13 +946,20 @@ document.addEventListener('keydown',function(e){
 
   if(e.key===' '||e.code==='Space'){
     e.preventDefault();
-    if(sessPhase===1){
+    if(phase==='say'){
       const w=sessionQueue[sessIdx];
       if(w) startVoice(w.ko);
     } else {
       const revealBtn=document.querySelector('#reveal-area button');
       if(revealBtn) revealBtn.click();
     }
+    return;
+  }
+
+  if(phase==='pair'&&['1','2','3','4'].includes(e.key)){
+    const btns=document.querySelectorAll('.pair-option:not(:disabled)');
+    const idx=parseInt(e.key)-1;
+    if(btns[idx]) btns[idx].click();
     return;
   }
 
@@ -875,8 +973,7 @@ document.addEventListener('keydown',function(e){
     const rateArea=document.getElementById('rate-area');
     if(rateArea&&!rateArea.classList.contains('hidden')) rateWord('hard');
   } else if(e.key==='Enter'){
-    if(sessPhase===2){const s=document.getElementById('use-skip');if(s)s.click();return;}
-    if(sessPhase===3){finishWord();}
+    if(phase==='use'){const s=document.getElementById('use-skip');if(s)s.click();return;}
   }});
 
 document.addEventListener('click',function(e){

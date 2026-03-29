@@ -449,6 +449,47 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   max-width: 280px;
 }
 
+/* — Collocation Quiz — */
+
+.pair-option {
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  border: 0.5px solid var(--border-hover);
+  border-radius: var(--radius-md);
+  background: transparent;
+  font-size: var(--fs-body);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.pair-option:hover { background: var(--bg-secondary); }
+.pair-option .pair-num {
+  font-size: var(--fs-meta);
+  color: var(--text-secondary);
+  min-width: 16px;
+}
+.pair-option .pair-ko { font-weight: 500; }
+.pair-option .pair-en {
+  font-size: var(--fs-body-sm);
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+.pair-option.correct {
+  border-color: var(--teal);
+  background: var(--teal-light);
+}
+.pair-option.wrong {
+  border-color: var(--red);
+  background: var(--red-light);
+}
+.pair-option:disabled { opacity: 1; cursor: default; }
+.pair-option:disabled:hover { background: transparent; }
+.pair-option.correct:disabled:hover { background: var(--teal-light); }
+.pair-option.wrong:disabled:hover { background: var(--red-light); }
+
 /* — Due Summary — */
 
 #due-summary {

@@ -107,13 +107,15 @@
   <div id="session-screen" class="hidden">
     <div class="sess-header" style="display:none">
       <div class="sess-toolbar">
-        <span class="sess-round" id="sess-round"></span>
-        <button onclick="cancelSession()" class="btn-sess ml-auto">cancel</button>
-        <button onclick="endSessionEarly()" class="btn-sess">end early</button>
+        <span class="label" id="sess-round"></span>
       </div>
       <div class="phase-bar" id="phase-bar"></div>
     </div>
     <div id="phase-content"></div>
+    <div class="sess-footer">
+      <button onclick="cancelSession()" class="btn-secondary">cancel</button>
+      <button onclick="endSessionEarly()" class="btn-secondary">end early</button>
+    </div>
   </div>
 
   <div id="done-screen" class="hidden">

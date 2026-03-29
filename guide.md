@@ -50,7 +50,7 @@ Each review session cycles through **4 rounds**, processing all words in each ro
 |-------|------|-------------|
 | 1 | See it | Korean word shown, reveal meaning, self-rate: knew it / vaguely / forgot |
 | 2 | Say it | English shown, speak Korean word into mic (Web Speech API) |
-| 3 | Pair it | Multiple choice — pick the natural collocation for the word (requires API key) |
+| 3 | Pair it | Spot the odd one out — 3 natural collocations and 1 unnatural one (requires API key) |
 | 4 | Use it | Write a sentence using the word (12 rotating prompts, feeds end-of-session story) |
 
 Sessions default to 5 words. Hard words are prioritised, then shuffled randomly within each group.

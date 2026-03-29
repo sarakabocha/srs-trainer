@@ -444,7 +444,7 @@ function renderSessionPhase(){
         </div>
         ${hasSpeech ? `
         <button class="mic-btn" id="mic-btn" onclick="startVoice(${escJS(w.ko)})">${MIC_ICON}</button>
-        <div id="voice-status" class="prompt-text text-center voice-status">tap mic or type below</div>`
+        <div id="voice-status" class="text-center voice-status">tap mic or type below</div>`
         : ''}
         <div class="type-input-wrap"><input class="type-input" id="type-ans" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>
         <div id="type-result" class="type-result"></div>
@@ -480,13 +480,13 @@ function renderSessionPhase(){
       `<div class="card"><div class="session-body">` +
       `<div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
       `<div class="phase-center">` +
-      `<div class="prompt-text mb-sm">find the natural pairing</div>` +
-      `<div class="flashcard-word">${esc(coll.prompt)}</div>` +
+      `<div class="prompt-text mb-sm">which does NOT pair with</div>` +
+      `<div class="flashcard-word">${esc(w.ko)}</div>` +
       `</div>` +
       `<div id="pair-options">${optBtns}</div>` +
       `<div id="pair-result" class="pair-result"></div>` +
       `</div>` +
-      `<div class="session-actions">` +
+      `<div class="session-actions session-actions-end">` +
       `<button onclick="skipPair()" class="ml-auto">skip ${SVG_ARROW_RIGHT}</button>` +
       `</div></div>`;
   } else if(phase==='use'){
@@ -573,7 +573,8 @@ async function loadCollocations(words){
   const db=getDB();
   const uncached=[];
   words.forEach(w=>{
-    if(db.words[w.ko]?.collocations) sessCollocations[w.ko]=db.words[w.ko].collocations;
+    const cached=db.words[w.ko]?.collocations;
+    if(cached&&cached.wrong) sessCollocations[w.ko]=cached;
     else uncached.push(w);
   });
   if(!uncached.length) return true;
@@ -582,18 +583,19 @@ async function loadCollocations(words){
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:`For each Korean word below, provide one natural collocation (word pairing) and 3 plausible but incorrect alternatives. Collocations can be verb+noun, adjective+noun, or adverb+verb patterns — pick whichever is most useful for learning.
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1500,messages:[{role:'user',content:`For each Korean word below, provide 3 natural collocations (word pairings) and 1 plausible but INCORRECT one. The learner must spot the odd one out. Collocations can be verb+noun, adjective+noun, or adverb+verb patterns — pick whichever is most useful for learning.
 
 Words:
 ${wordList}
 
 Respond ONLY with a valid JSON array, no other text:
-[{"ko":"훈련","pattern":"noun+verb","correct":{"ko":"받다","en":"to undergo"},"prompt":"훈련을 ___","options":[{"ko":"받다","en":"to undergo"},{"ko":"등록하다","en":"to register"},{"ko":"만들다","en":"to make"},{"ko":"쓰다","en":"to write"}]}]
+[{"ko":"훈련","wrong":{"ko":"등록하다","en":"to register"},"options":[{"ko":"받다","en":"to undergo"},{"ko":"시작하다","en":"to start"},{"ko":"등록하다","en":"to register"},{"ko":"마치다","en":"to finish"}]}]
 
 Rules:
-- "options" must include the correct answer and 3 wrong ones (4 total)
-- Distractors must be real Korean words but NOT natural collocations with the target word
-- "prompt" should be a short fill-in-the-blank phrase showing how the collocation is used
+- "options" must include exactly 3 natural collocations and 1 unnatural one (4 total)
+- The wrong option must be a real Korean word that sounds plausible but is NOT a natural collocation with the target word
+- The 3 correct options should be common, useful collocations the learner should know
+- "wrong" must match one of the entries in "options"
 - Keep English translations concise`}]})
     });
     const data=await res.json();
@@ -602,7 +604,7 @@ Rules:
     if(!match) return Object.keys(sessCollocations).length>0;
     const arr=JSON.parse(match[0]);
     arr.forEach(c=>{
-      if(c.ko&&c.correct&&c.options?.length>=2){
+      if(c.ko&&c.wrong&&c.options?.length>=2){
         sessCollocations[c.ko]=c;
         if(db.words[c.ko]){db.words[c.ko].collocations=c;};
       }
@@ -616,27 +618,28 @@ Rules:
 
 function selectCollocation(ko,chosenKo){
   const coll=sessCollocations[ko];if(!coll)return;
-  const correct=coll.correct.ko===chosenKo;
+  const gotIt=coll.wrong.ko===chosenKo;
   const btns=document.querySelectorAll('.pair-option');
   btns.forEach(b=>{
     b.disabled=true;
     const bKo=b.querySelector('.pair-ko').textContent;
-    if(bKo===coll.correct.ko) b.classList.add('correct');
-    if(bKo===chosenKo&&!correct) b.classList.add('wrong');
+    if(bKo===coll.wrong.ko) b.classList.add(gotIt?'correct':'wrong');
+    if(bKo===chosenKo&&!gotIt) b.classList.add('chosen');
+    const opt=coll.options.find(o=>o.ko===bKo);
+    if(opt) b.insertAdjacentHTML('beforeend',`<span class="pair-en">${esc(opt.en)}</span>`);
   });
   const resultEl=document.getElementById('pair-result');
-  const answer = esc(coll.prompt.replace('___', coll.correct.ko));
-  if(correct){
-    resultEl.innerHTML=`<div class="pair-feedback correct">correct — ${answer}</div>`;
+  if(gotIt){
+    resultEl.innerHTML=`<div class="pair-feedback correct">correct</div>`;
   } else {
-    resultEl.innerHTML=`<div class="pair-feedback wrong">${answer}</div>`;
+    resultEl.innerHTML=`<div class="pair-feedback wrong">the odd one out was ${esc(coll.wrong.ko)} (${esc(coll.wrong.en)})</div>`;
   }
-  if(!sessPairResults.find(r=>r.ko===ko)) sessPairResults.push({ko,correct,chosen:chosenKo,answer:coll.correct.ko});
+  if(!sessPairResults.find(r=>r.ko===ko)) sessPairResults.push({ko,correct:gotIt,chosen:chosenKo,answer:coll.wrong.ko});
   const w=sessionQueue[sessIdx];
-  if(!correct&&w&&!sessionQueue.slice(sessIdx+1).find(q=>q.ko===ko)) sessionQueue.push(w);
+  if(!gotIt&&w&&!sessionQueue.slice(sessIdx+1).find(q=>q.ko===ko)) sessionQueue.push(w);
   // Show next button
   const actions=document.querySelector('.session-actions');
-  if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>enter</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
+  if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>space</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 
 function skipPair(){
@@ -699,7 +702,7 @@ function renderRecap(){
     html+=unique.map(r=>{
       const coll=sessCollocations[r.ko];
       const icon=r.correct?'<span class="recap-icon recap-icon-ok">✓</span>':r.skipped?'<span class="recap-icon recap-icon-skip">—</span>':'<span class="recap-icon recap-icon-fail">✗</span>';
-      const detail=coll?esc(coll.prompt.replace('___',coll.correct.ko)):'';
+      const detail=coll?`odd one out: ${esc(coll.wrong.ko)}`:'';
       return `<div class="recap-row">${icon} <span>${esc(r.ko)}</span><span class="muted">${detail}</span></div>`;
     }).join('');
     html+=`</div>`;
@@ -1001,6 +1004,9 @@ document.addEventListener('keydown',function(e){
     if(phase==='say'){
       const w=sessionQueue[sessIdx];
       if(w) startVoice(w.ko);
+    } else if(phase==='pair'){
+      const allDisabled=!document.querySelector('.pair-option:not(:disabled)');
+      if(allDisabled) nextWord();
     } else {
       const revealBtn=document.querySelector('#reveal-area button');
       if(revealBtn) revealBtn.click();
@@ -1025,7 +1031,6 @@ document.addEventListener('keydown',function(e){
     const rateArea=document.getElementById('rate-area');
     if(rateArea&&!rateArea.classList.contains('hidden')) rateWord('hard');
   } else if(e.key==='Enter'){
-    if(phase==='pair'){const allDisabled=!document.querySelector('.pair-option:not(:disabled)');if(allDisabled)nextWord();return;}
     if(phase==='use'){const s=document.getElementById('use-skip');if(s)s.click();return;}
   }});
 

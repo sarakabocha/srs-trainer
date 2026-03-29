@@ -23,7 +23,7 @@ const SESSION_SIZES=[5,10,15,0];
 
 const SVG_CHEVRON_RIGHT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
 const SVG_CHEVRON_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
-const SVG_ARROW_RIGHT='<svg style="width:14px;height:14px;vertical-align:-2px;margin-left:2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+const SVG_ARROW_RIGHT='<svg class="svg-icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
 const MIC_ICON=`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`;
 const MIC_ICON_ACTIVE=`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`;
 
@@ -85,28 +85,28 @@ function renderApiKeySection(){
   const has=!!getApiKey();
   if(has){
     el.innerHTML=`
-      <div style="display:flex;align-items:center;gap:8px;background:var(--bg-secondary);border-radius:var(--radius-md);padding:8px 10px;margin-bottom:6px">
-        <span style="font-size:var(--fs-body-sm);color:var(--teal);flex:1">key saved ✓</span>
+      <div class="api-key-saved">
+        <span class="api-key-saved-text">key saved ✓</span>
       </div>
-      <div style="display:flex;gap:6px">
-        <button onclick="startReplaceKey()" style="flex:1;font-size:var(--fs-meta);padding:6px 8px">replace</button>
-        <button onclick="removeApiKey()" style="flex:1;font-size:var(--fs-meta);padding:6px 8px;color:var(--color-text-danger, #E24B4A);border-color:var(--color-border-danger, #E24B4A)">remove</button>
+      <div class="flex-row gap-sm">
+        <button onclick="startReplaceKey()" class="btn-sm flex-1">replace</button>
+        <button onclick="removeApiKey()" class="btn-sm btn-danger flex-1">remove</button>
       </div>
-      <div id="api-key-replace" class="hidden" style="margin-top:8px">
-        <div style="display:flex;gap:6px">
-          <input type="password" id="api-key-input" placeholder="sk-ant-..." style="flex:1;font-size:var(--fs-body-sm);padding:7px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border-hover);background:transparent;color:var(--text);font-family:var(--font-ui)" />
-          <button onclick="saveApiKey()" style="white-space:nowrap;font-size:var(--fs-meta);padding:7px 10px">save</button>
+      <div id="api-key-replace" class="hidden mt-sm">
+        <div class="flex-row gap-sm">
+          <input type="password" id="api-key-input" placeholder="sk-ant-..." class="api-key-input" />
+          <button onclick="saveApiKey()" class="btn-sm">save</button>
         </div>
-        <div id="api-key-status" style="font-size:var(--fs-meta);margin-top:4px;min-height:14px;color:var(--teal)"></div>
+        <div id="api-key-status" class="api-key-status"></div>
       </div>`;
   } else {
     el.innerHTML=`
-      <div style="font-size:var(--fs-meta);color:var(--text-secondary);line-height:1.5;margin-bottom:8px">Enables AI feedback, story generation, and theme grouping.</div>
-      <div style="display:flex;gap:6px">
-        <input type="password" id="api-key-input" placeholder="sk-ant-..." style="flex:1;font-size:var(--fs-body-sm);padding:7px 10px;border-radius:var(--radius-md);border:0.5px solid var(--border-hover);background:transparent;color:var(--text);font-family:var(--font-ui)" />
-        <button onclick="saveApiKey()" style="white-space:nowrap;font-size:var(--fs-meta);padding:7px 10px">save</button>
+      <div class="api-key-hint">Enables AI feedback, story generation, and theme grouping.</div>
+      <div class="flex-row gap-sm">
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." class="api-key-input" />
+        <button onclick="saveApiKey()" class="btn-sm">save</button>
       </div>
-      <div id="api-key-status" style="font-size:var(--fs-meta);margin-top:4px;min-height:14px;color:var(--teal)"></div>`;
+      <div id="api-key-status" class="api-key-status"></div>`;
   }
 }
 
@@ -159,7 +159,7 @@ function renderSessionSizes(dueCount){
   el.innerHTML=SESSION_SIZES.map(n=>{
     const label=n===0?'all':String(n);
     const active=(sessionSize===n)||(n===0&&sessionSize>=dueCount);
-    return`<button class="theme-pill${active?' active':''}" onclick="setSessionSize(${n})" style="padding:3px 10px;font-size:var(--fs-meta)">${label}</button>`;
+    return`<button class="theme-pill session-size-pill${active?' active':''}" onclick="setSessionSize(${n})">${label}</button>`;
   }).join('');
 }
 
@@ -191,11 +191,11 @@ function renderThemes(){
   const filterBtns=document.getElementById('theme-filter-btns');
 
   if(!key){
-    themeEl.innerHTML=`<div class="muted" style="font-size:var(--fs-body-sm)">Add an API key in the ··· menu to enable theme grouping.</div>`;
+    themeEl.innerHTML=`<div class="muted">Add an API key in the ··· menu to enable theme grouping.</div>`;
     filterEl.style.display='none';return;
   }
   if(!themed.length){
-    themeEl.innerHTML=`<div class="muted" style="font-size:var(--fs-body-sm)">${words.length?'Click refresh to group your words by theme.':'Add words to get started.'}</div>`;
+    themeEl.innerHTML=`<div class="muted">${words.length?'Click refresh to group your words by theme.':'Add words to get started.'}</div>`;
     filterEl.style.display='none';return;
   }
   const groups={};
@@ -205,7 +205,7 @@ function renderThemes(){
     <div class="theme-row">
       <span class="theme-name">${esc(theme)}</span>
       <span class="theme-count">${ws.length} word${ws.length>1?'s':''} · ${ws.filter(isDue).length} due</span>
-    </div>`).join('')+(unthemed.length?`<div class="theme-row"><span class="theme-name" style="color:var(--text-secondary)">ungrouped</span><span class="theme-count">${unthemed.length} words</span></div>`:'');
+    </div>`).join('')+(unthemed.length?`<div class="theme-row"><span class="theme-name theme-name-muted">ungrouped</span><span class="theme-count">${unthemed.length} words</span></div>`:'');
 
   const themes=Object.keys(groups).sort();
   filterEl.style.display='block';
@@ -257,7 +257,7 @@ function renderHardList(hard){
   const el=document.getElementById('hard-list');
   document.getElementById('hard-count-label').textContent=hard.length?hard.length+' words':'';
   if(!hard.length){el.innerHTML='<div class="muted">No words flagged as hard yet.</div>';return;}
-  el.innerHTML=hard.map(w=>`<div class="hard-row"><span style="font-size:var(--fs-body)">${esc(w.ko)}</span><span class="muted" style="margin-left:8px;font-size:var(--fs-body-sm)">${esc(w.en)}</span><span class="badge badge-hard" style="margin-left:auto">${w.hardCount}x hard</span></div>`).join('');
+  el.innerHTML=hard.map(w=>`<div class="hard-row"><span>${esc(w.ko)}</span><span class="muted">${esc(w.en)}</span><span class="badge badge-hard">${w.hardCount}x hard</span></div>`).join('');
 }
 
 // — UI Rendering: Word Bank —
@@ -285,8 +285,8 @@ function editWord(ko){
   db=getDB();const w=db.words[ko];if(!w)return;
   const row=document.getElementById('wr-'+ko);
   if(!row)return;
-  row.style.cssText='display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:0.5px solid var(--border)';
-  row.innerHTML=`<input type="text" id="edit-ko" value="${esc(w.ko)}" style="flex:1;font-size:var(--fs-body);padding:6px 8px" /><input type="text" id="edit-en" value="${esc(w.en)}" style="flex:1;font-size:var(--fs-body-sm);padding:6px 8px" /><button class="del-btn" onclick="saveEditWord(${escJS(ko)})" style="font-weight:500;color:var(--teal)">save</button><button class="del-btn" onclick="renderWordBank()">cancel</button>`;
+  row.className='edit-row';
+  row.innerHTML=`<input type="text" id="edit-ko" value="${esc(w.ko)}" class="edit-input" /><input type="text" id="edit-en" value="${esc(w.en)}" class="edit-input-sm" /><button class="del-btn edit-save" onclick="saveEditWord(${escJS(ko)})">save</button><button class="del-btn" onclick="renderWordBank()">cancel</button>`;
   document.getElementById('edit-ko')?.focus();
 }
 
@@ -360,7 +360,7 @@ async function startSession(){
   showScreen('session');
   // Load collocations if API key available
   if(getApiKey()){
-    document.getElementById('phase-content').innerHTML=`<div class="card" style="text-align:center;padding:2rem"><div class="ai-loading">preparing session...</div></div>`;
+    document.getElementById('phase-content').innerHTML=`<div class="card session-loading"><div class="ai-loading">preparing session...</div></div>`;
     const ok=await loadCollocations(sessionQueue);
     phaseMap=ok?['see','say','pair','use']:['see','say','use'];
   } else {
@@ -395,10 +395,9 @@ function showWords(){
 function renderPhaseBar(){
   const bar=document.getElementById('phase-bar');bar.innerHTML='';
   const total=phaseMap.length,done=sessPhase;
-  bar.style.cssText='display:flex;gap:6px;margin-bottom:0.75rem';
   for(let i=0;i<total;i++){
     const p=document.createElement('div');
-    p.style.cssText=`flex:1;height:4px;border-radius:2px;background:${i<done?'var(--teal)':i===done?'#5DCAA5':'var(--border-tertiary, rgba(0,0,0,0.12))'}`;
+    p.className='pip'+(i<done?' done':i===done?' active':'');
     bar.appendChild(p);
   }
   const nameMap={see:'see it',say:'say it',pair:'pair it',use:'use it'};
@@ -413,30 +412,45 @@ function renderSessionPhase(){
   const el=document.getElementById('phase-content');
   const phase=phaseMap[sessPhase];
   if(phase==='see'){
-    const kbdHints=isMobile?'':'<kbd>space</kbd>';
-    const kbdR=isMobile?['','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>'];
-    el.innerHTML=`<div class="card"><div class="session-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div class="flashcard-word" style="margin-bottom:0.5rem">${esc(w.ko)}</div><div id="reveal-area" style="width:100%"><button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button></div></div><div class="session-actions" style="padding-top:1.5rem"><div id="rate-area" class="hidden"><div class="label">how well did you remember?</div><div class="rate-row"><button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button><button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button><button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button></div></div></div></div>`;
+    const remaining = sessionQueue.length - sessIdx - 1;
+    const kbdHints = isMobile ? '' : '<kbd>space</kbd>';
+    const kbdR = isMobile ? ['','',''] : ['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>'];
+    el.innerHTML =
+      `<div class="card">` +
+      `<div class="session-body session-body-center">` +
+      `<div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
+      `<div class="flashcard-word">${esc(w.ko)}</div>` +
+      `<div id="reveal-area" class="w-full">` +
+      `<button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button>` +
+      `</div></div>` +
+      `<div class="session-actions">` +
+      `<div id="rate-area" class="hidden">` +
+      `<div class="label">how well did you remember?</div>` +
+      `<div class="rate-row">` +
+      `<button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button>` +
+      `<button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button>` +
+      `<button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button>` +
+      `</div></div></div></div>`;
   } else if(phase==='say'){
-    const hasSpeech=('webkitSpeechRecognition' in window||'SpeechRecognition' in window);
+    const remaining = sessionQueue.length - sessIdx - 1;
+    const hasSpeech = ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
     el.innerHTML=`<div class="card">
       <div class="session-body">
-        <div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div>
-        <div style="text-align:center;padding:0.5rem 0 0.25rem">
-          <div style="font-size:var(--fs-body);color:var(--text-secondary);margin-bottom:0.25rem">how do you say</div>
-          <div style="font-size:var(--fs-stat);font-weight:500;color:var(--text);line-height:1.3">${esc(w.en)}</div>
-          <div style="font-size:var(--fs-body);color:var(--text-secondary);margin-top:4px">in Korean?</div>
+        <div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>
+        <div class="phase-center">
+          <div class="prompt-text mb-sm">how do you say</div>
+          <div class="prompt-word">${esc(w.en)}</div>
+          <div class="prompt-text mt-sm">in Korean?</div>
         </div>
-        ${hasSpeech?`
-        <button class="mic-btn" id="mic-btn" onclick="startVoice(${escJS(w.ko)})">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-secondary)"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
-        </button>
-        <div id="voice-status" style="text-align:center;font-size:var(--fs-body);color:var(--text-secondary);min-height:20px;margin-bottom:0.75rem">tap mic or type below</div>`
-        :''}
+        ${hasSpeech ? `
+        <button class="mic-btn" id="mic-btn" onclick="startVoice(${escJS(w.ko)})">${MIC_ICON}</button>
+        <div id="voice-status" class="prompt-text text-center voice-status">tap mic or type below</div>`
+        : ''}
         <div class="type-input-wrap"><input class="type-input" id="type-ans" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>
-        <div id="type-result" style="min-height:20px;margin-top:0.5rem"></div>
+        <div id="type-result" class="type-result"></div>
       </div>
-      <div class="session-actions" style="display:flex;justify-content:flex-end">
-        <button onclick="skipRecall()" style="font-size:var(--fs-body)">skip ${SVG_ARROW_RIGHT}</button>
+      <div class="session-actions session-actions-end">
+        <button onclick="skipRecall()">skip ${SVG_ARROW_RIGHT}</button>
       </div>
     </div>`;
     setTimeout(()=>{
@@ -455,12 +469,43 @@ function renderSessionPhase(){
     if(!coll){nextWord();return;}
     const opts=shuffleArray([...coll.options]);
     const kbdNums=isMobile?['','','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>','<kbd>4</kbd>'];
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="text-align:center;padding:0.5rem 0 0.25rem"><div style="font-size:var(--fs-body);color:var(--text-secondary);margin-bottom:0.25rem">what naturally pairs with</div><div class="flashcard-word" style="margin-bottom:0.25rem">${esc(w.ko)}</div><div class="muted" style="margin-bottom:1rem">${esc(w.en)}</div><div style="font-size:var(--fs-body);color:var(--text-secondary);margin-bottom:1rem">${esc(coll.prompt)}</div></div><div id="pair-options">${opts.map((o,i)=>`<button class="pair-option" onclick="selectCollocation(${escJS(w.ko)},${escJS(o.ko)})"><span class="pair-num">${kbdNums[i]||i+1}</span><span class="pair-ko">${esc(o.ko)}</span><span class="pair-en">${esc(o.en)}</span></button>`).join('')}</div><div id="pair-result" style="min-height:20px;margin-top:0.75rem"></div></div><div class="session-actions"><button onclick="skipPair()" style="margin-left:auto;font-size:var(--fs-body)">skip ${SVG_ARROW_RIGHT}</button></div></div>`;
+    const remaining = sessionQueue.length - sessIdx - 1;
+    const optBtns = opts.map((o, i) =>
+      `<button class="pair-option" onclick="selectCollocation(${escJS(w.ko)},${escJS(o.ko)})">` +
+      `<span class="pair-num">${kbdNums[i] || i + 1}</span>` +
+      `<span class="pair-ko">${esc(o.ko)}</span>` +
+      `</button>`
+    ).join('');
+    el.innerHTML =
+      `<div class="card"><div class="session-body">` +
+      `<div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
+      `<div class="phase-center">` +
+      `<div class="prompt-text mb-sm">find the natural pairing</div>` +
+      `<div class="flashcard-word">${esc(coll.prompt)}</div>` +
+      `</div>` +
+      `<div id="pair-options">${optBtns}</div>` +
+      `<div id="pair-result" class="pair-result"></div>` +
+      `</div>` +
+      `<div class="session-actions">` +
+      `<button onclick="skipPair()" class="ml-auto">skip ${SVG_ARROW_RIGHT}</button>` +
+      `</div></div>`;
   } else if(phase==='use'){
-    const ctx=sessionContexts[sessIdx]||(sessionContexts[sessIdx]=CONTEXTS[Math.floor(Math.random()*CONTEXTS.length)](w.ko,w.en));
-    const aiFbBtn=getApiKey()?`<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:'';
-    el.innerHTML=`<div class="card"><div class="session-body"><div class="label">${sessionQueue.length-sessIdx-1} word${sessionQueue.length-sessIdx-1!==1?'s':''} left</div><div style="font-size:var(--fs-body);line-height:1.6;margin:8px 0 .75rem;white-space:pre-line;color:var(--text)">${esc(ctx)}</div><textarea id="use-ans" placeholder="Write in Korean..."></textarea><div id="use-ai-feedback"></div></div><div class="session-actions"><div class="btn-row">${aiFbBtn}<button id="use-skip" onclick="skipUse()" style="margin-left:auto">skip ${SVG_ARROW_RIGHT}</button></div></div></div>`;
-    setTimeout(()=>document.getElementById('use-ans')?.focus(),50);
+    const remaining = sessionQueue.length - sessIdx - 1;
+    const ctx = sessionContexts[sessIdx] || (sessionContexts[sessIdx] = CONTEXTS[Math.floor(Math.random() * CONTEXTS.length)](w.ko, w.en));
+    const aiFbBtn = getApiKey()
+      ? `<button onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile ? '' : ' <kbd>⌘↵</kbd>'}</button>`
+      : '';
+    el.innerHTML =
+      `<div class="card"><div class="session-body">` +
+      `<div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
+      `<div class="prompt-text prompt-context">${esc(ctx)}</div>` +
+      `<textarea id="use-ans" placeholder="Write in Korean..."></textarea>` +
+      `<div id="use-ai-feedback"></div>` +
+      `</div><div class="session-actions"><div class="btn-row">` +
+      `${aiFbBtn}` +
+      `<button id="use-skip" onclick="skipUse()" class="ml-auto">skip ${SVG_ARROW_RIGHT}</button>` +
+      `</div></div></div>`;
+    setTimeout(() => document.getElementById('use-ans')?.focus(), 50);
   }
 }
 
@@ -485,7 +530,7 @@ function nextWord(){
 
 function revealMeaning(){
   const w=sessionQueue[sessIdx];
-  document.getElementById('reveal-area').innerHTML=`<div class="answer-box" style="text-align:center"><span style="font-size:var(--fs-story);font-weight:500;color:var(--teal)">${esc(w.en)}</span>${w.hardCount>0?`<div class="muted" style="margin-top:4px;font-size:var(--fs-meta)">flagged hard ${w.hardCount}x</div>`:''}</div>`;
+  document.getElementById('reveal-area').innerHTML=`<div class="answer-box text-center"><span class="reveal-answer">${esc(w.en)}</span>${w.hardCount>0?`<div class="muted reveal-hard">flagged hard ${w.hardCount}x</div>`:''}</div>`;
   document.getElementById('rate-area').classList.remove('hidden');
 }
 
@@ -580,15 +625,18 @@ function selectCollocation(ko,chosenKo){
     if(bKo===chosenKo&&!correct) b.classList.add('wrong');
   });
   const resultEl=document.getElementById('pair-result');
+  const answer = esc(coll.prompt.replace('___', coll.correct.ko));
   if(correct){
-    resultEl.innerHTML=`<div style="font-size:var(--fs-body);color:var(--teal-dark)">correct — ${esc(coll.prompt.replace('___',coll.correct.ko))}</div>`;
+    resultEl.innerHTML=`<div class="pair-feedback correct">correct — ${answer}</div>`;
   } else {
-    resultEl.innerHTML=`<div style="font-size:var(--fs-body);color:var(--red-dark)">${esc(coll.prompt.replace('___',coll.correct.ko))}</div>`;
+    resultEl.innerHTML=`<div class="pair-feedback wrong">${answer}</div>`;
   }
   if(!sessPairResults.find(r=>r.ko===ko)) sessPairResults.push({ko,correct,chosen:chosenKo,answer:coll.correct.ko});
   const w=sessionQueue[sessIdx];
   if(!correct&&w&&!sessionQueue.slice(sessIdx+1).find(q=>q.ko===ko)) sessionQueue.push(w);
-  setTimeout(()=>nextWord(),correct?800:1500);
+  // Show next button
+  const actions=document.querySelector('.session-actions');
+  if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>enter</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 
 function skipPair(){
@@ -617,7 +665,7 @@ function endSession(){
 function scoreBadge(score){
   if(!score) return '';
   const cls=score==='great'?'score-great':score==='needs work'?'score-revise':'score-ok';
-  return `<span class="fb-score ${cls}" style="font-size:var(--fs-xs);padding:1px 7px">${esc(score)}</span>`;
+  return `<span class="fb-score fb-score-sm ${cls}">${esc(score)}</span>`;
 }
 
 function renderRecap(){
@@ -631,11 +679,11 @@ function renderRecap(){
     const unique=Object.values(byWord);
     const correct=unique.filter(r=>r.result==='correct').length;
     html+=`<div class="card"><div class="label">round ${roundNum('say')} — say it</div>`;
-    html+=`<div class="muted" style="margin-bottom:8px">${correct} of ${unique.length} recalled correctly</div>`;
+    html+=`<div class="muted recap-summary">${correct} of ${unique.length} recalled correctly</div>`;
     html+=unique.map(r=>{
-      const icon=r.result==='correct'?'<span style="color:var(--teal)">✓</span>':r.result==='gave-up'?'<span style="color:var(--red)">✗</span>':'<span style="color:var(--text-secondary)">—</span>';
+      const icon=r.result==='correct'?'<span class="recap-icon recap-icon-ok">✓</span>':r.result==='gave-up'?'<span class="recap-icon recap-icon-fail">✗</span>':'<span class="recap-icon recap-icon-skip">—</span>';
       const label=r.result==='correct'?'recalled':r.result==='gave-up'?'gave up':'skipped';
-      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:var(--fs-body-sm)">${icon} <span>${esc(r.ko)}</span><span class="muted">${esc(r.en)}</span><span class="muted" style="margin-left:auto">${label}</span></div>`;
+      return `<div class="recap-row">${icon} <span>${esc(r.ko)}</span><span class="muted">${esc(r.en)}</span><span class="muted ml-auto">${label}</span></div>`;
     }).join('');
     html+=`</div>`;
   }
@@ -647,12 +695,12 @@ function renderRecap(){
     const unique=Object.values(byWord);
     const correct=unique.filter(r=>r.correct).length;
     html+=`<div class="card"><div class="label">round ${roundNum('pair')} — pair it</div>`;
-    html+=`<div class="muted" style="margin-bottom:8px">${correct} of ${unique.length} paired correctly</div>`;
+    html+=`<div class="muted recap-summary">${correct} of ${unique.length} paired correctly</div>`;
     html+=unique.map(r=>{
       const coll=sessCollocations[r.ko];
-      const icon=r.correct?'<span style="color:var(--teal)">✓</span>':r.skipped?'<span style="color:var(--text-secondary)">—</span>':'<span style="color:var(--red)">✗</span>';
+      const icon=r.correct?'<span class="recap-icon recap-icon-ok">✓</span>':r.skipped?'<span class="recap-icon recap-icon-skip">—</span>':'<span class="recap-icon recap-icon-fail">✗</span>';
       const detail=coll?esc(coll.prompt.replace('___',coll.correct.ko)):'';
-      return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:var(--fs-body-sm)">${icon} <span>${esc(r.ko)}</span><span class="muted">${detail}</span></div>`;
+      return `<div class="recap-row">${icon} <span>${esc(r.ko)}</span><span class="muted">${detail}</span></div>`;
     }).join('');
     html+=`</div>`;
   }
@@ -660,7 +708,11 @@ function renderRecap(){
   // Use it — Sentences
   if(sessUseSentences.length){
     html+=`<div class="card"><div class="label">round ${roundNum('use')} — use it</div>`;
-    html+=sessUseSentences.map(s=>`<div style="padding:6px 0;border-bottom:0.5px solid var(--border)"><div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><span style="font-size:var(--fs-meta);font-weight:500">${esc(s.ko)}</span><span class="muted" style="font-size:var(--fs-meta)">${esc(s.en)}</span>${scoreBadge(s.score)}</div><div style="font-size:var(--fs-body-sm);color:var(--text)">${esc(s.sentence)}</div></div>`).join('');
+    html+=sessUseSentences.map(s=>
+      `<div class="recap-sentence">` +
+      `<div class="recap-sentence-head"><span class="word">${esc(s.ko)}</span><span class="def">${esc(s.en)}</span>${scoreBadge(s.score)}</div>` +
+      `<div class="recap-sentence-body">${esc(s.sentence)}</div></div>`
+    ).join('');
     html+=`</div>`;
   }
 
@@ -689,7 +741,7 @@ async function generateStory(){
   const out=document.getElementById('story-content');
   const key=getApiKey();
   if(!key||sessUseSentences.length===0){
-    if(!key) out.innerHTML=`<div class="muted" style="font-size:var(--fs-body-sm)">Add an API key in the ··· menu to generate a story.</div>`;
+    if(!key) out.innerHTML=`<div class="muted">Add an API key in the ··· menu to generate a story.</div>`;
     else document.getElementById('story-card').classList.add('hidden');
     return;
   }
@@ -742,8 +794,8 @@ async function getAiFeedback(phase,ko,en){
     const sugg=(suggM?.[1]||'').trim();
     const scoreClass=score.includes('great')?'score-great':score.includes('needs')?'score-revise':'score-ok';
     const scoreLabel=score.includes('great')?'great':score.includes('needs')?'needs work':'good';
-    let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div style="color:var(--text)">${esc(feed)}</div>`;
-    if(sugg&&sugg.toLowerCase()!=='none')html+=`<div style="margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border)"><div class="fb-label">suggestion</div><div style="color:var(--text)">${esc(sugg)}</div></div>`;
+    let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div>${esc(feed)}</div>`;
+    if(sugg&&sugg.toLowerCase()!=='none')html+=`<div class="fb-suggestion"><div class="fb-label">suggestion</div><div>${esc(sugg)}</div></div>`;
     html+=`</div>`;
     document.getElementById(outId).innerHTML=html;
     // Store score on the corresponding sentence record
@@ -864,11 +916,11 @@ function startVoice(expectedKo){
     if(correct){
       if(input) input.style.color='var(--teal)';
       if(status) status.textContent='';
-      if(typeResult) typeResult.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="advancePhase()" style="border-color:var(--teal);color:var(--teal)">correct →</button></div>`;
+      if(typeResult) typeResult.innerHTML=`<div class="btn-action-row"><button class="btn-correct" onclick="advancePhase()">correct →</button></div>`;
     } else {
       if(input) input.style.color='var(--text)';
       if(status) status.textContent='not quite';
-      if(typeResult) typeResult.innerHTML=`<div style="text-align:center;display:flex;gap:8px;justify-content:center;margin-top:0.5rem"><button onclick="retryVoice(${escJS(expectedKo)})">retry</button><button onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
+      if(typeResult) typeResult.innerHTML=`<div class="btn-retry-row"><button onclick="retryVoice(${escJS(expectedKo)})">retry</button><button onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
     }
   };
   rec.onerror=function(e){
@@ -906,10 +958,10 @@ function checkTypedAnswer(expectedKo){
   if(correct){
     input.disabled=true;
     input.style.color='var(--teal)';
-    result.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="advancePhase()" style="border-color:var(--teal);color:var(--teal)">correct →</button></div>`;
+    result.innerHTML=`<div class="btn-action-row"><button class="btn-correct" onclick="advancePhase()">correct →</button></div>`;
   } else {
     input.style.color='var(--red)';
-    result.innerHTML=`<div style="text-align:center;font-size:var(--fs-body-sm);color:var(--text-secondary);margin-top:4px">not quite — try again or <button class="del-btn" onclick="giveUpTyped(${escJS(expectedKo)})" style="font-size:var(--fs-body-sm);color:var(--text-secondary);text-decoration:underline;padding:0">give up</button></div>`;
+    result.innerHTML=`<div class="give-up-text">not quite — try again or <button class="del-btn give-up-link" onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
     setTimeout(()=>{input.style.color='var(--text)';},600);
   }
 }
@@ -921,7 +973,7 @@ function giveUpTyped(expectedKo){
   const w=sessionQueue[sessIdx];
   sessRecallResults.push({ko:w.ko,en:w.en,result:'gave-up'});
   sessionQueue.push(w);
-  if(result) result.innerHTML=`<div style="text-align:center;margin-top:0.5rem"><button onclick="nextWord()">next →</button></div>`;
+  if(result) result.innerHTML=`<div class="btn-action-row"><button onclick="nextWord()">next →</button></div>`;
 }
 
 // — Keyboard Shortcuts —
@@ -973,6 +1025,7 @@ document.addEventListener('keydown',function(e){
     const rateArea=document.getElementById('rate-area');
     if(rateArea&&!rateArea.classList.contains('hidden')) rateWord('hard');
   } else if(e.key==='Enter'){
+    if(phase==='pair'){const allDisabled=!document.querySelector('.pair-option:not(:disabled)');if(allDisabled)nextWord();return;}
     if(phase==='use'){const s=document.getElementById('use-skip');if(s)s.click();return;}
   }});
 

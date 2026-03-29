@@ -449,6 +449,8 @@ textarea { resize: none; min-height: 72px; }
 .screen-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
 .add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
 .btn-secondary { width: 100%; padding: 11px; font-size: var(--fs-body); color: var(--text-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-md); background: transparent; margin-top: 0.25rem; }
+.btn-row-full { display: flex; gap: 8px; }
+.btn-row-full .btn-secondary { flex: 1; }
 .filter-label { font-size: var(--fs-body-sm); color: var(--text-secondary); margin-bottom: 6px; }
 .session-size-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 
@@ -506,6 +508,9 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
 
 .story-text { font-family: var(--font-ui); font-size: var(--fs-body); line-height: 2; color: var(--text); }
 .story-translation { font-size: var(--fs-body-sm); line-height: 1.8; color: var(--text-secondary); margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
+.story-saved-card { margin-bottom: 0.75rem; }
+.story-saved-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.story-saved-words { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0.75rem; }
 .story-word { font-weight: 600; color: var(--teal); }
 .sentence-chip { font-size: var(--fs-body); color: var(--text-secondary); padding: 8px 10px; background: var(--bg-secondary); border-radius: var(--radius-md); margin-bottom: 6px; line-height: 1.5; }
 .sentence-chip .chip-word { font-weight: 500; color: var(--text); font-size: var(--fs-body-sm); margin-bottom: 2px; }

@@ -375,6 +375,7 @@ function showScreen(name){
   document.getElementById('session-screen').classList.toggle('hidden',name!=='session');
   document.getElementById('done-screen').classList.toggle('hidden',name!=='done');
   document.getElementById('words-screen').classList.toggle('hidden',name!=='words');
+  document.getElementById('stories-screen').classList.toggle('hidden',name!=='stories');
   const sessHeader=document.querySelector('.sess-header');
   if(name!=='session'){
     document.getElementById('phase-content').innerHTML='';
@@ -499,7 +500,7 @@ function renderSessionPhase(){
       `<div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
       `<div class="prompt-text prompt-context">${esc(ctx)}</div>` +
       `<textarea id="use-ans" placeholder="Write in Korean..."></textarea>` +
-      `${hasKey?`<button class="btn-full mt-sm" onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:''}` +
+      `${hasKey?`<button class="btn-full mt-sm mb-sm" onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:''}` +
       `<div id="use-ai-feedback"></div>` +
       `</div><div class="session-actions session-actions-end">` +
       `<button id="use-skip" onclick="skipUse()">skip ${SVG_ARROW_RIGHT}</button>` +
@@ -774,6 +775,7 @@ async function generateStory(){
     const koHtml=esc(korean).replace(/\*\*(.+?)\*\*/g,'<span class="story-word">$1</span>').replace(/\n/g,'<br>');
     const enHtml=esc(english).replace(/\*\*(.+?)\*\*/g,'<span class="story-word">$1</span>').replace(/\n/g,'<br>');
     out.innerHTML=`<div class="story-text">${koHtml}</div>${enHtml?`<div class="story-translation">${enHtml}</div>`:''}`;
+    saveCurrentStory(korean,english,sessUseSentences);
   }catch(e){
     out.innerHTML=`<div class="ai-loading">Could not reach API. Check your key and connection.</div>`;
   }
@@ -1057,6 +1059,99 @@ document.addEventListener('click',function(e){
 document.addEventListener('visibilitychange',function(){
   if(document.hidden) stopRecognition();
 });
+
+// — Saved Stories —
+
+function getSavedStories(){try{const d=localStorage.getItem('kr_srs_stories');return d?JSON.parse(d):[];}catch(e){return[];}}
+function saveStories(stories){try{localStorage.setItem('kr_srs_stories',JSON.stringify(stories));}catch(e){}}
+
+function saveCurrentStory(korean,english,words){
+  const stories=getSavedStories();
+  stories.unshift({
+    id:Date.now(),
+    date:todayStr(),
+    korean:korean,
+    english:english,
+    words:words.map(s=>({ko:s.ko,en:s.en,sentence:s.sentence}))
+  });
+  saveStories(stories);
+}
+
+function deleteStory(id){
+  const stories=getSavedStories().filter(s=>s.id!==id);
+  saveStories(stories);
+  renderStoriesList();
+}
+
+function showStories(){
+  showScreen('stories');
+  renderStoriesList();
+}
+
+function renderStoriesList(){
+  const stories=getSavedStories();
+  const countEl=document.getElementById('stories-count');
+  const listEl=document.getElementById('stories-list');
+  countEl.textContent=stories.length?`${stories.length} stor${stories.length===1?'y':'ies'}`:'';
+  if(!stories.length){
+    listEl.innerHTML='<div class="card"><div class="muted">No saved stories yet. Complete a session with an API key to generate stories.</div></div>';
+    return;
+  }
+  listEl.innerHTML=stories.map(s=>{
+    const koHtml=esc(s.korean).replace(/\*\*(.+?)\*\*/g,'<span class="story-word">$1</span>').replace(/\n/g,'<br>');
+    const enHtml=s.english?esc(s.english).replace(/\*\*(.+?)\*\*/g,'<span class="story-word">$1</span>').replace(/\n/g,'<br>'):'';
+    const wordChips=s.words?s.words.map(w=>`<span class="theme-pill">${esc(w.ko)}</span>`).join(' '):'';
+    return `<div class="card story-saved-card">
+      <div class="story-saved-header">
+        <span class="muted">${esc(s.date)}</span>
+        <button class="del-btn" onclick="deleteStory(${s.id})">delete</button>
+      </div>
+      ${wordChips?`<div class="story-saved-words">${wordChips}</div>`:''}
+      <div class="story-text">${koHtml}</div>
+      ${enHtml?`<div class="story-translation">${enHtml}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function exportStories(){
+  const stories=getSavedStories();
+  if(!stories.length){showSyncFeedback('No stories to export.');return;}
+  const json=JSON.stringify(stories,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toISOString().slice(0,10);
+  a.href=url;a.download=`korean-stories-${date}.json`;
+  a.click();URL.revokeObjectURL(url);
+  showSyncFeedback('Stories exported.');
+}
+
+function importStories(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    try{
+      const imported=JSON.parse(ev.target.result);
+      if(!Array.isArray(imported)){showSyncFeedback('Invalid file — expected a stories array.');return;}
+      const existing=getSavedStories();
+      const existingIds=new Set(existing.map(s=>s.id));
+      let added=0;
+      imported.forEach(s=>{
+        if(s.korean&&!existingIds.has(s.id)){
+          existing.push(s);
+          existingIds.add(s.id);
+          added++;
+        }
+      });
+      existing.sort((a,b)=>(b.id||0)-(a.id||0));
+      saveStories(existing);
+      showSyncFeedback(`Imported ${added} stor${added===1?'y':'ies'}.`);
+    }catch(err){showSyncFeedback('Could not read stories file.');}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
 
 // — Init —
 

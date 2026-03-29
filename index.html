@@ -18,6 +18,10 @@
         <button class="dropdown-item" onclick="document.getElementById('import-input').click()">import progress</button>
         <input type="file" id="import-input" accept=".json" class="hidden" onchange="importData(event)" />
         <div class="divider"></div>
+        <button class="dropdown-item" onclick="exportStories()">export stories</button>
+        <button class="dropdown-item" onclick="document.getElementById('import-stories-input').click()">import stories</button>
+        <input type="file" id="import-stories-input" accept=".json" class="hidden" onchange="importStories(event)" />
+        <div class="divider"></div>
         <div class="dropdown-section">
           <div class="label mb-0">Anthropic API key</div>
           <div id="api-key-section"></div>
@@ -71,7 +75,10 @@
       </div>
       <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
     </div>
-    <button class="btn-secondary" onclick="showWords()">manage words</button>
+    <div class="btn-row-full">
+      <button class="btn-secondary" onclick="showWords()">manage words</button>
+      <button class="btn-secondary" onclick="showStories()">saved stories</button>
+    </div>
   </div>
 
   <div id="words-screen" class="hidden">
@@ -102,6 +109,15 @@
       </div>
       <div id="word-bank-list"></div>
     </div>
+  </div>
+
+  <div id="stories-screen" class="hidden">
+    <div class="screen-toolbar">
+      <button onclick="goHome()" class="muted">← back</button>
+      <span class="label mb-0">saved stories</span>
+      <span class="muted ml-auto" id="stories-count"></span>
+    </div>
+    <div id="stories-list"></div>
   </div>
 
   <div id="session-screen" class="hidden">

@@ -377,14 +377,17 @@ function showScreen(name){
   document.getElementById('words-screen').classList.toggle('hidden',name!=='words');
   document.getElementById('stories-screen').classList.toggle('hidden',name!=='stories');
   const sessHeader=document.querySelector('.sess-header');
+  const appHeader=document.querySelector('.app-header');
   if(name!=='session'){
     document.getElementById('phase-content').innerHTML='';
     document.getElementById('phase-bar').innerHTML='';
     const sr=document.getElementById('sess-round');
     if(sr) sr.textContent='';
     if(sessHeader) sessHeader.style.display='none';
+    if(appHeader) appHeader.classList.remove('hidden');
   } else {
     if(sessHeader) sessHeader.style.display='';
+    if(appHeader) appHeader.classList.add('hidden');
   }
   window.scrollTo(0,0);
 }
@@ -850,34 +853,22 @@ function importData(e){
     try{
       const imported=JSON.parse(ev.target.result);
       if(!imported.words){showSyncFeedback('Invalid file — no word bank found.');return;}
-      const existing=getDB();
-      const merged={...existing};
-      merged.words={...existing.words};
-      let added=0,updated=0;
-      Object.values(imported.words).forEach(w=>{
-        if(!merged.words[w.ko]){merged.words[w.ko]=w;added++;}
-        else{
-          const ex=merged.words[w.ko];
-          const lvl=Math.max(ex.level||0,w.level||0);
-          const hc=Math.max(ex.hardCount||0,w.hardCount||0);
-          const nr=ex.nextReview&&w.nextReview?((ex.nextReview>w.nextReview)?ex.nextReview:w.nextReview):ex.nextReview||w.nextReview;
-          if(lvl!==(ex.level||0)||hc!==(ex.hardCount||0)){
-            ex.level=lvl;ex.hardCount=hc;if(nr)ex.nextReview=nr;
-            if(w.theme&&!ex.theme)ex.theme=w.theme;
-            updated++;
-          }
-        }
-      });
-      merged.sessions=Math.max(existing.sessions||0,imported.sessions||0);
-      merged.streak=Math.max(existing.streak||0,imported.streak||0);
-      if(imported.lastDate>existing.lastDate) merged.lastDate=imported.lastDate;
-      saveDB(merged);
+      saveDB(imported);
       loadHome();
-      showSyncFeedback(`Imported: ${added} new, ${updated} updated.`);
+      const count=Object.keys(imported.words).length;
+      showSyncFeedback(`Imported ${count} word${count!==1?'s':''} — replaced all progress.`);
     }catch(err){showSyncFeedback('Could not read file.');}
   };
   reader.readAsText(file);
   e.target.value='';
+}
+
+function resetAllData(){
+  if(!confirm('This will delete all words, progress, and stats. This cannot be undone.\n\nAre you sure?')) return;
+  saveDB({words:{},sessions:0,streak:0,lastDate:null});
+  document.getElementById('dropdown-menu').classList.add('hidden');
+  loadHome();
+  showSyncFeedback('All progress reset.');
 }
 
 function showSyncFeedback(msg){

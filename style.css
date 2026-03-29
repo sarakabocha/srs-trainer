@@ -499,6 +499,8 @@ textarea { resize: none; min-height: 72px; }
 .btn-sm { font-size: var(--fs-xs); padding: 6px 8px; }
 .btn-danger { color: var(--red); border-color: var(--red); }
 .divider { height: 0.5px; background: var(--border); margin: 6px 0; }
+.dropdown-danger { color: var(--red); }
+.dropdown-danger:hover { background: var(--red-light); }
 
 /* — Keyboard Hints — */
 

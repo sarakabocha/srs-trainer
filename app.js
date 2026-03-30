@@ -866,21 +866,22 @@ async function lookupWord(ko){
 }
 
 async function lookupAddWord(){
+  const btn=document.getElementById('lookup-btn');
+  if(btn.getAttribute('aria-disabled')==='true') return;
   const ko=document.getElementById('add-ko').value.trim();
   if(!ko) return;
-  const btn=document.getElementById('lookup-btn');
   const enInput=document.getElementById('add-en');
-  btn.disabled=true;btn.textContent='...';
+  btn.setAttribute('aria-disabled','true');btn.textContent='...';
   const translation=await translateKo(ko);
-  if(translation&&!enInput.value) enInput.value=translation;
-  else if(translation) enInput.value=translation;
+  if(translation) enInput.value=translation;
   btn.textContent='look up';updateLookupBtn();
 }
 
 function updateLookupBtn(){
   const btn=document.getElementById('lookup-btn');
   if(!btn) return;
-  btn.disabled=!getApiKey()||!document.getElementById('add-ko').value.trim();
+  const off=!getApiKey()||!document.getElementById('add-ko').value.trim();
+  btn.setAttribute('aria-disabled',off?'true':'false');
 }
 
 function closeWordPopup(){

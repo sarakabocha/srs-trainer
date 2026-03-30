@@ -276,8 +276,8 @@ textarea { resize: none; min-height: 72px; }
   cursor: pointer; white-space: nowrap;
 }
 .btn-lookup:hover { color: var(--teal); background: none; }
-.btn-lookup:disabled { opacity: 0.3; cursor: not-allowed; }
-.btn-lookup:disabled:hover { color: var(--text-secondary); background: none; }
+.btn-lookup[aria-disabled="true"] { opacity: 0.3; cursor: not-allowed; }
+.btn-lookup[aria-disabled="true"]:hover { color: var(--text-secondary); background: none; }
 
 /* — Session Phase Bar — */
 

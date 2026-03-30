@@ -202,35 +202,49 @@ button:disabled { opacity: 0.35; cursor: not-allowed; }
   letter-spacing: 0.01em;
 }
 
-#start-btn {
+.btn-primary {
   background: var(--teal);
   color: #fff;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: var(--fs-body);
-  padding: 14px;
-  box-shadow: none;
   transition: all 0.25s ease;
-  position: relative;
-  overflow: hidden;
 }
-#start-btn:hover {
+.btn-primary:hover {
   background: #0d7d5a;
-  box-shadow: none;
   transform: translateY(-1px);
 }
-#start-btn:active {
+.btn-primary:active {
   transform: translateY(0);
-  box-shadow: none;
 }
-#start-btn:disabled {
+.btn-primary:disabled {
   background: var(--bg-secondary);
   color: var(--text-secondary);
-  box-shadow: none;
   transform: none;
 }
 
+.btn-secondary { width: 100%; padding: 11px; font-size: var(--fs-body); color: var(--text-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-md); background: transparent; }
+
+.btn-tertiary {
+  font-size: var(--fs-xs); color: var(--text-secondary);
+  background: none; border: none;
+  padding: 2px 6px;
+}
+.btn-tertiary:hover { background: none; color: var(--red); }
+
+.btn-sm { font-size: var(--fs-xs); padding: 6px 8px; }
+
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.75rem; }
+
+
+/* — Voice / Mic — */
+
+.btn-circle { width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--border-hover); background: transparent; display: flex; align-items: center; justify-content: center; transition: all .15s; margin: 1rem auto; }
+.btn-circle:hover { background: var(--bg-secondary); }
+.btn-circle.listening { border-color: var(--teal); background: var(--teal-light); animation: pulse 1.2s ease-in-out infinite; }
+.btn-circle.correct { border-color: #1D9E75; background: #E1F5EE; }
+.btn-circle.wrong { border-color: #D85A30; background: #FAECE7; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+
+
 
 /* — Inputs — */
 
@@ -275,8 +289,8 @@ textarea { resize: none; min-height: 72px; }
 
 .rate-row { display: flex; gap: 8px; margin-top: 1rem; }
 .rate-row button { flex: 1; padding: 9px 6px; font-size: var(--fs-body); }
-.btn-good { border-color: var(--teal); color: var(--teal-dark); }
-.btn-hard { border-color: var(--red); color: var(--red-dark); }
+.btn-success { border-color: var(--teal); color: var(--teal-dark); }
+.btn-danger { border-color: var(--red); color: var(--red-dark); }
 
 /* — Streak — */
 
@@ -338,13 +352,7 @@ textarea { resize: none; min-height: 72px; }
 .wb-ko { font-size: var(--fs-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wb-en { font-size: var(--fs-body-sm); color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .wb-date { font-size: var(--fs-xs); color: var(--text-secondary); white-space: nowrap; }
-.del-btn {
-  font-size: var(--fs-xs); color: var(--text-secondary);
-  background: none; border: none;
-  cursor: pointer; padding: 2px 6px;
-  margin-left: auto;
-}
-.del-btn:hover { color: var(--red); background: none; }
+
 
 /* — Collapsible Sections — */
 
@@ -420,9 +428,6 @@ textarea { resize: none; min-height: 72px; }
 .voice-status {font-size: var(--fs-body-sm); color: var(--text-secondary); margin-bottom: 0.75rem; }
 .type-result { min-height: 20px; margin-top: 0.5rem; }
 .pair-result { min-height: 20px; margin: 1rem 0; text-align: center;}
-.btn-correct { border-color: var(--teal); color: var(--teal); }
-.btn-action-row { text-align: center; margin-top: 0.5rem; }
-.btn-retry-row { text-align: center; display: flex; gap: 8px; justify-content: center; margin-top: 0.5rem; }
 .give-up-text { text-align: center; font-size: var(--fs-body-sm); color: var(--text-secondary); margin-top: 4px; }
 .give-up-link { font-size: var(--fs-body-sm); color: var(--text-secondary); text-decoration: underline; padding: 0; }
 .reveal-answer { font-size: var(--fs-body); font-weight: 500; color: var(--teal); }
@@ -442,13 +447,12 @@ textarea { resize: none; min-height: 72px; }
 .story-sentences { margin-bottom: 1rem; }
 .theme-body { margin-top: 0.75rem; }
 .bulk-area { margin-top: 8px; }
-.bulk-add-btn { margin-top: 6px; }
 
 /* — Words Screen — */
 
 .screen-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
 .add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-.btn-secondary { width: 100%; padding: 11px; font-size: var(--fs-body); color: var(--text-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-md); background: transparent; margin-top: 0.25rem; }
+
 .btn-row-full { display: flex; gap: 8px; }
 .btn-row-full .btn-secondary { flex: 1; }
 .filter-label { font-size: var(--fs-body-sm); color: var(--text-secondary); margin-bottom: 6px; }
@@ -469,7 +473,7 @@ textarea { resize: none; min-height: 72px; }
 /* — API Key & Menu — */
 
 .menu-wrap { margin-left: auto; position: relative; }
-.menu-btn { padding: 6px 10px; font-size: 18px; line-height: 1; border-radius: var(--radius-md); border: 0.5px solid var(--border); color: var(--text-secondary); }
+.btn-menu { padding: 6px 10px; font-size: 18px; line-height: 1; }
 .dropdown {
   position: absolute; right: 0; top: calc(100% + 6px);
   background: var(--bg); border: 0.5px solid var(--border-hover);
@@ -496,8 +500,8 @@ textarea { resize: none; min-height: 72px; }
   padding: 8px 10px; margin-bottom: 6px;
 }
 .api-key-hint { font-size: var(--fs-xs); color: var(--text-secondary); line-height: 1.5; margin-bottom: 8px; }
-.btn-sm { font-size: var(--fs-xs); padding: 6px 8px; }
-.btn-danger { color: var(--red); border-color: var(--red); }
+
+
 .divider { height: 0.5px; background: var(--border); margin: 6px 0; }
 .dropdown-danger { color: var(--red); }
 .dropdown-danger:hover { background: var(--red-light); }
@@ -535,11 +539,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
 .word-popup-translation { min-height: 20px; margin-bottom: 0.75rem; }
 .word-popup-form { display: flex; flex-direction: column; gap: 8px; }
 .popup-input { font-size: var(--fs-body); padding: 8px 10px; }
-.popup-add-btn {
-  width: 100%; padding: 10px; font-size: var(--fs-body);
-  background: var(--teal); color: #fff; border: none; border-radius: var(--radius-md);
-}
-.popup-add-btn:hover { background: #0d7d5a; }
 .popup-feedback { font-size: var(--fs-body-sm); margin-top: 4px; min-height: 18px; color: var(--text-secondary); }
 .popup-feedback-ok { color: var(--teal); }
 .popup-feedback-note { color: var(--amber); }
@@ -569,17 +568,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
 .theme-name { font-size: var(--fs-body-sm); font-weight: 500; color: var(--text); }
 .theme-name-muted { color: var(--text-secondary); }
 .theme-count { font-size: var(--fs-xs); color: var(--text-secondary); }
-.caret-btn { background: none; border: none; cursor: pointer; padding: 2px 4px; color: var(--text-secondary); font-size: var(--fs-body); line-height: 1; transition: transform .2s; }
-.caret-btn.open { transform: rotate(180deg); }
-
-/* — Voice / Mic — */
-
-.mic-btn { width: 72px; height: 72px; border-radius: 50%; border: 2px solid var(--border-hover); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; margin: 1rem auto; }
-.mic-btn:hover { background: var(--bg-secondary); }
-.mic-btn.listening { border-color: var(--teal); background: var(--teal-light); animation: pulse 1.2s ease-in-out infinite; }
-.mic-btn.correct { border-color: #1D9E75; background: #E1F5EE; }
-.mic-btn.wrong { border-color: #D85A30; background: #FAECE7; }
-@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
 
 /* — Type Input — */
 
@@ -672,9 +660,9 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   #phase-content { font-size: var(--fs-body); }
   button { padding: 10px 14px; -webkit-tap-highlight-color: transparent; }
   button:active { transform: scale(0.97); }
-  #start-btn:active { transform: scale(0.97); }
+  .btn-primary:active { transform: scale(0.97); }
   .rate-row button { padding: 12px 6px; font-size: var(--fs-body); }
-  .mic-btn { width: 80px; height: 80px; touch-action: manipulation; }
+  .btn-circle { width: 80px; height: 80px; touch-action: manipulation; }
   .btn-row { gap: 6px; }
   textarea { font-size: 16px; }
   input[type=text]:not(.type-input) { font-size: 16px; }

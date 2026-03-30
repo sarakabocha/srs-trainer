@@ -265,7 +265,7 @@ function renderHardList(hard){
 
 
 function wordRowHtml(w){
-  return`<div class="word-row" id="wr-${esc(w.ko)}"><span class="wb-ko">${esc(w.ko)}</span><span class="wb-en">${esc(w.en)}</span><span class="wb-date">${w.nextReview?'next: '+esc(w.nextReview):'new'}</span><button class="del-btn" onclick="editWord(${escJS(w.ko)})">edit</button><button class="del-btn" onclick="deleteWord(${escJS(w.ko)})">remove</button></div>`;
+  return`<div class="word-row" id="wr-${esc(w.ko)}"><span class="wb-ko">${esc(w.ko)}</span><span class="wb-en">${esc(w.en)}</span><span class="wb-date">${w.nextReview?'next: '+esc(w.nextReview):'new'}</span><button class="btn-tertiary" onclick="editWord(${escJS(w.ko)})">edit</button><button class="btn-tertiary" onclick="deleteWord(${escJS(w.ko)})">remove</button></div>`;
 }
 function wordRowsHtml(words){return words.map(wordRowHtml).join('');}
 
@@ -287,7 +287,7 @@ function editWord(ko){
   const row=document.getElementById('wr-'+ko);
   if(!row)return;
   row.className='edit-row';
-  row.innerHTML=`<input type="text" id="edit-ko" value="${esc(w.ko)}" class="edit-input" /><input type="text" id="edit-en" value="${esc(w.en)}" class="edit-input-sm" /><button class="del-btn edit-save" onclick="saveEditWord(${escJS(ko)})">save</button><button class="del-btn" onclick="renderWordBank()">cancel</button>`;
+  row.innerHTML=`<input type="text" id="edit-ko" value="${esc(w.ko)}" class="edit-input" /><input type="text" id="edit-en" value="${esc(w.en)}" class="edit-input-sm" /><button class="btn-tertiary edit-save" onclick="saveEditWord(${escJS(ko)})">save</button><button class="btn-tertiary" onclick="renderWordBank()">cancel</button>`;
   document.getElementById('edit-ko')?.focus();
 }
 
@@ -435,9 +435,9 @@ function renderSessionPhase(){
       `<div id="rate-area" class="hidden">` +
       `<div class="label">how well did you remember?</div>` +
       `<div class="rate-row">` +
-      `<button class="btn-good" onclick="rateWord('good')">knew it ${kbdR[0]}</button>` +
+      `<button class="btn-success" onclick="rateWord('good')">knew it ${kbdR[0]}</button>` +
       `<button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button>` +
-      `<button class="btn-hard" onclick="rateWord('hard')">forgot ${kbdR[2]}</button>` +
+      `<button class="btn-danger" onclick="rateWord('hard')">forgot ${kbdR[2]}</button>` +
       `</div></div></div></div>`;
   } else if(phase==='say'){
     const remaining = sessionQueue.length - sessIdx - 1;
@@ -451,7 +451,7 @@ function renderSessionPhase(){
           <div class="prompt-text mt-sm">in Korean?</div>
         </div>
         ${hasSpeech ? `
-        <button class="mic-btn" id="mic-btn" onclick="startVoice(${escJS(w.ko)})">${MIC_ICON}</button>
+        <button class="btn-circle" id="btn-circle" onclick="startVoice(${escJS(w.ko)})">${MIC_ICON}</button>
         <div id="voice-status" class="text-center voice-status">tap mic or type below</div>`
         : ''}
         <div class="type-input-wrap"><input class="type-input" id="type-ans" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>
@@ -989,9 +989,9 @@ function toggleMenu(){
 // — Voice Recognition —
 
 function resetMic(){
-  const micBtn=document.getElementById('mic-btn');
+  const micBtn=document.getElementById('btn-circle');
   const status=document.getElementById('voice-status');
-  if(micBtn){micBtn.className='mic-btn';micBtn.innerHTML=MIC_ICON;micBtn.disabled=false;}
+  if(micBtn){micBtn.className='btn-circle';micBtn.innerHTML=MIC_ICON;micBtn.disabled=false;}
   if(status) status.textContent='tap mic or type below';
 }
 
@@ -1004,18 +1004,18 @@ function startVoice(expectedKo){
   rec.interimResults=false;
   rec.maxAlternatives=5;
   activeRecognition=rec;
-  const micBtn=document.getElementById('mic-btn');
+  const micBtn=document.getElementById('btn-circle');
   const status=document.getElementById('voice-status');
   const input=document.getElementById('type-ans');
   const typeResult=document.getElementById('type-result');
-  if(micBtn){micBtn.className='mic-btn listening';micBtn.innerHTML=MIC_ICON_ACTIVE;}
+  if(micBtn){micBtn.className='btn-circle listening';micBtn.innerHTML=MIC_ICON_ACTIVE;}
   if(status) status.textContent='listening... (tap mic to cancel)';
   rec.onresult=function(e){
     const alternatives=Array.from(e.results[0]).map(r=>r.transcript.trim());
     const heard=alternatives[0];
     const correct=alternatives.some(a=>normalize(a)===normalize(expectedKo));
     activeRecognition=null;
-    if(micBtn){micBtn.className='mic-btn';micBtn.innerHTML=MIC_ICON;}
+    if(micBtn){micBtn.className='btn-circle';micBtn.innerHTML=MIC_ICON;}
     if(input){input.value=heard;input.disabled=true;}
     if(correct){
       if(input) input.style.color='var(--teal)';
@@ -1024,7 +1024,7 @@ function startVoice(expectedKo){
     } else {
       if(input) input.style.color='var(--text)';
       if(status) status.textContent='not quite';
-      if(typeResult) typeResult.innerHTML=`<div class="btn-retry-row"><button onclick="retryVoice(${escJS(expectedKo)})">retry</button><button onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
+      if(typeResult) typeResult.innerHTML=`<div class="btn-row" style="justify-content:center"><button onclick="retryVoice(${escJS(expectedKo)})">retry</button><button onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
     }
   };
   rec.onerror=function(e){
@@ -1034,8 +1034,8 @@ function startVoice(expectedKo){
   };
   rec.onend=function(){
     if(activeRecognition===rec) activeRecognition=null;
-    const btn=document.getElementById('mic-btn');
-    if(btn&&btn.className==='mic-btn listening'){btn.className='mic-btn';btn.innerHTML=MIC_ICON;}
+    const btn=document.getElementById('btn-circle');
+    if(btn&&btn.className==='btn-circle listening'){btn.className='btn-circle';btn.innerHTML=MIC_ICON;}
   };
   rec.start();
 }
@@ -1065,7 +1065,7 @@ function checkTypedAnswer(expectedKo){
     showSayNext();
   } else {
     input.style.color='var(--red)';
-    result.innerHTML=`<div class="give-up-text">not quite — try again or <button class="del-btn give-up-link" onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
+    result.innerHTML=`<div class="give-up-text">not quite — try again or <button class="btn-tertiary give-up-link" onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
     setTimeout(()=>{input.style.color='var(--text)';},600);
   }
 }
@@ -1195,7 +1195,7 @@ function renderStoriesList(){
     return `<div class="card story-saved-card">
       <div class="story-saved-header">
         <span class="muted">${esc(s.date)}</span>
-        <button class="del-btn" onclick="deleteStory(${s.id})">delete</button>
+        <button class="btn-tertiary" onclick="deleteStory(${s.id})">delete</button>
       </div>
       ${wordChips?`<div class="story-saved-words">${wordChips}</div>`:''}
       <div class="story-text">${koHtml}</div>

@@ -12,7 +12,7 @@
     <div class="app-title">한국어 단어장</div>
     <div class="app-sub">spaced repetition trainer</div>
     <div class="menu-wrap">
-      <button id="menu-btn" class="menu-btn" onclick="toggleMenu()" title="More options">···</button>
+      <button id="menu-btn" class="btn-sm btn-menu" onclick="toggleMenu()" title="More options">···</button>
       <div id="dropdown-menu" class="dropdown hidden">
         <button class="dropdown-item" onclick="exportData()">export progress</button>
         <button class="dropdown-item" onclick="document.getElementById('import-input').click()">import progress</button>
@@ -56,7 +56,7 @@
         <span class="filter-label mb-0">words per session</span>
         <div id="session-size-btns" class="flex-row gap-sm ml-auto"></div>
       </div>
-      <button class="btn-full" id="start-btn" onclick="startSession()">start review</button>
+      <button class="btn-full btn-primary" id="start-btn" onclick="startSession()">start review</button>
     </div>
     <div class="card collapsed" id="theme-card">
       <div class="section-head clickable" onclick="toggleThemeCard()">
@@ -77,7 +77,7 @@
       </div>
       <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
     </div>
-    <div class="btn-row-full">
+    <div class="btn-row-full mt-sm">
       <button class="btn-secondary" onclick="showWords()">manage words</button>
       <button class="btn-secondary" onclick="showStories()">saved stories</button>
     </div>
@@ -100,7 +100,7 @@
       </div>
       <div id="bulk-area" class="hidden bulk-area">
         <textarea id="bulk-input" placeholder="One per line:&#10;갑자기 suddenly&#10;당황하다 to be flustered&#10;어쩌면 perhaps"></textarea>
-        <button onclick="addBulk()" class="w-full bulk-add-btn">add all</button>
+        <button onclick="addBulk()" class="w-full mt-sm">add all</button>
       </div>
       <div id="add-feedback"></div>
     </div>
@@ -149,7 +149,7 @@
       <div id="story-sentences" class="story-sentences"></div>
       <div id="story-content"></div>
     </div>
-    <button class="btn-secondary" onclick="goHome()">back to home</button>
+    <button class="btn-secondary mt-sm" onclick="goHome()">back to home</button>
   </div>
 </div>
 
@@ -157,13 +157,13 @@
 <div id="word-popup" class="word-popup hidden">
   <div class="word-popup-header">
     <span class="word-popup-word" id="popup-word"></span>
-    <button class="del-btn" onclick="closeWordPopup()">✕</button>
+    <button class="btn-tertiary" onclick="closeWordPopup()">✕</button>
   </div>
   <div id="popup-translation" class="word-popup-translation"></div>
   <div class="word-popup-form">
     <input type="text" id="popup-ko" placeholder="Korean" class="popup-input" />
     <input type="text" id="popup-en" placeholder="Meaning" class="popup-input" />
-    <button onclick="addWordFromPopup()" class="popup-add-btn">add to word list</button>
+    <button onclick="addWordFromPopup()" class="btn-full btn-primary">add to word list</button>
   </div>
   <div id="popup-feedback" class="popup-feedback"></div>
 </div>

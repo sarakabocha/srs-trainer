@@ -217,11 +217,11 @@ function renderThemes(){
 
   if(!key){
     themeEl.innerHTML=`<div class="muted">Add an API key in the ··· menu to enable theme grouping.</div>`;
-    filterEl.style.display='none';return;
+    filterEl.classList.add('hidden');return;
   }
   if(!themed.length){
     themeEl.innerHTML=`<div class="muted">${words.length?'Click refresh to group your words by theme.':'Add words to get started.'}</div>`;
-    filterEl.style.display='none';return;
+    filterEl.classList.add('hidden');return;
   }
   const groups={};
   themed.forEach(w=>{if(!groups[w.theme])groups[w.theme]=[];groups[w.theme].push(w);});
@@ -233,7 +233,7 @@ function renderThemes(){
     </div>`).join('')+(unthemed.length?`<div class="theme-row"><span class="theme-name theme-name-muted">ungrouped</span><span class="theme-count">${unthemed.length} words</span></div>`:'');
 
   const themes=Object.keys(groups).sort();
-  filterEl.style.display='block';
+  filterEl.classList.remove('hidden');
   filterBtns.innerHTML=`<button class="theme-pill${!activeThemeFilter?' active':''}" onclick="setThemeFilter(null)">all</button>`
     +themes.map(t=>`<button class="theme-pill${activeThemeFilter===t?' active':''}" onclick="setThemeFilter(${escJS(t)})">  ${esc(t)}</button>`).join('');
 }

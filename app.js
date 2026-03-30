@@ -813,11 +813,9 @@ function tapStoryWord(el){
   }
 }
 
-async function lookupWord(ko){
+async function translateKo(ko){
   const key=getApiKey();
-  if(!key) return;
-  const transEl=document.getElementById('popup-translation');
-  transEl.innerHTML='<span class="ai-loading" style="margin:0;font-size:var(--fs-body-sm)">looking up...</span>';
+  if(!key) return null;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -825,14 +823,38 @@ async function lookupWord(ko){
       body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:100,messages:[{role:'user',content:`Translate this Korean word/phrase to English. Give only the translation, concise, no extra text: "${ko}"`}]})
     });
     const data=await res.json();
-    if(data.error){transEl.innerHTML='';return;}
-    const translation=(data.content?.[0]?.text||'').trim();
-    if(translation){
-      transEl.innerHTML=`<span class="muted">${esc(translation)}</span>`;
-      const enInput=document.getElementById('popup-en');
-      if(!enInput.value) enInput.value=translation;
-    } else { transEl.innerHTML=''; }
-  }catch(e){ transEl.innerHTML=''; }
+    if(data.error) return null;
+    return (data.content?.[0]?.text||'').trim()||null;
+  }catch(e){ return null; }
+}
+
+async function lookupWord(ko){
+  const transEl=document.getElementById('popup-translation');
+  transEl.innerHTML='<span class="ai-loading" style="margin:0;font-size:var(--fs-body-sm)">looking up...</span>';
+  const translation=await translateKo(ko);
+  if(translation){
+    transEl.innerHTML=`<span class="muted">${esc(translation)}</span>`;
+    const enInput=document.getElementById('popup-en');
+    if(!enInput.value) enInput.value=translation;
+  } else { transEl.innerHTML=''; }
+}
+
+async function lookupAddWord(){
+  const ko=document.getElementById('add-ko').value.trim();
+  if(!ko) return;
+  const btn=document.getElementById('lookup-btn');
+  const enInput=document.getElementById('add-en');
+  btn.disabled=true;btn.textContent='...';
+  const translation=await translateKo(ko);
+  if(translation&&!enInput.value) enInput.value=translation;
+  else if(translation) enInput.value=translation;
+  btn.textContent='look up';updateLookupBtn();
+}
+
+function updateLookupBtn(){
+  const btn=document.getElementById('lookup-btn');
+  if(!btn) return;
+  btn.disabled=!getApiKey()||!document.getElementById('add-ko').value.trim();
 }
 
 function closeWordPopup(){
@@ -1257,4 +1279,5 @@ function importStories(e){
 
 // — Init —
 
+document.getElementById('add-ko').addEventListener('input',updateLookupBtn);
 loadHome();

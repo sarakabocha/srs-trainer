@@ -77,22 +77,14 @@
       </div>
       <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
     </div>
-    <div class="flex-row gap-md mt-sm">
-      <button class="btn-secondary flex-1" onclick="showWords()">manage words</button>
-      <button class="btn-secondary flex-1" onclick="showStories()">saved stories</button>
-    </div>
-  </div>
-
-  <div id="words-screen" class="hidden">
-    <div class="flex-row gap-lg mb-lg">
-      <button onclick="goHome()" class="muted">← back</button>
-      <span class="label mb-0">manage words</span>
-    </div>
     <div class="card">
       <div class="label">add words</div>
       <div class="add-grid">
         <input type="text" id="add-ko" placeholder="Word / 단어" />
-        <input type="text" id="add-en" placeholder="Definition / 정의" />
+        <div class="input-with-action">
+          <input type="text" id="add-en" placeholder="Definition / 정의" />
+          <button type="button" class="btn-tertiary btn-lookup" id="lookup-btn" onclick="lookupAddWord()" disabled>look up</button>
+        </div>
       </div>
       <div class="btn-row mt-0">
         <button onclick="addSingleWord()" class="flex-1">add word</button>
@@ -103,6 +95,17 @@
         <button onclick="addBulk()" class="w-full mt-sm">add all</button>
       </div>
       <div id="add-feedback"></div>
+    </div>
+    <div class="flex-row gap-md mt-sm">
+      <button class="btn-secondary flex-1" onclick="showWords()">manage words</button>
+      <button class="btn-secondary flex-1" onclick="showStories()">saved stories</button>
+    </div>
+  </div>
+
+  <div id="words-screen" class="hidden">
+    <div class="flex-row gap-lg mb-lg">
+      <button onclick="goHome()" class="muted">← back</button>
+      <span class="label mb-0">manage words</span>
     </div>
     <div class="card">
       <div class="section-head">

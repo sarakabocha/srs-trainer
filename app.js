@@ -434,7 +434,7 @@ function renderSessionPhase(){
       `<div class="session-actions">` +
       `<div id="rate-area" class="hidden">` +
       `<div class="label">how well did you remember?</div>` +
-      `<div class="rate-row">` +
+      `<div class="rate-row mt-lg">` +
       `<button class="btn-success" onclick="rateWord('good')">knew it ${kbdR[0]}</button>` +
       `<button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button>` +
       `<button class="btn-danger" onclick="rateWord('hard')">forgot ${kbdR[2]}</button>` +
@@ -802,6 +802,10 @@ function tapStoryWord(el){
 
   overlay.classList.remove('hidden');
   popup.classList.remove('hidden');
+  requestAnimationFrame(()=>{
+    overlay.classList.add('visible');
+    popup.classList.add('visible');
+  });
 
   // Auto-translate if API key available and word not already known
   if(getApiKey()&&!db.words[cleaned]){
@@ -832,8 +836,14 @@ async function lookupWord(ko){
 }
 
 function closeWordPopup(){
-  document.getElementById('word-popup').classList.add('hidden');
-  document.getElementById('word-popup-overlay').classList.add('hidden');
+  const popup=document.getElementById('word-popup');
+  const overlay=document.getElementById('word-popup-overlay');
+  popup.classList.remove('visible');
+  overlay.classList.remove('visible');
+  setTimeout(()=>{
+    popup.classList.add('hidden');
+    overlay.classList.add('hidden');
+  },200);
 }
 
 function addWordFromPopup(){
@@ -1169,6 +1179,7 @@ function saveCurrentStory(korean,english,words){
 }
 
 function deleteStory(id){
+  if(!confirm('Delete this story?')) return;
   const stories=getSavedStories().filter(s=>s.id!==id);
   saveStories(stories);
   renderStoriesList();

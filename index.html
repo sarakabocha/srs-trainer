@@ -53,7 +53,7 @@
         <div id="theme-filter-btns" class="flex-row flex-wrap gap-sm"></div>
       </div>
       <div class="session-size-row">
-        <span class="filter-label mb-0">words per session</span>
+        <span class="filter-label">words per session</span>
         <div id="session-size-btns" class="flex-row gap-sm ml-auto"></div>
       </div>
       <button class="btn-full btn-primary" id="start-btn" onclick="startSession()">start review</button>
@@ -66,7 +66,7 @@
           <span class="toggle-icon" id="theme-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
         </div>
       </div>
-      <div id="theme-body" class="hidden theme-body">
+      <div id="theme-body" class="hidden mt-md">
         <div id="theme-list"><div class="muted">Add an API key and words to auto-group by theme.</div></div>
       </div>
     </div>
@@ -77,28 +77,28 @@
       </div>
       <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
     </div>
-    <div class="btn-row-full mt-sm">
-      <button class="btn-secondary" onclick="showWords()">manage words</button>
-      <button class="btn-secondary" onclick="showStories()">saved stories</button>
+    <div class="flex-row gap-md mt-sm">
+      <button class="btn-secondary flex-1" onclick="showWords()">manage words</button>
+      <button class="btn-secondary flex-1" onclick="showStories()">saved stories</button>
     </div>
   </div>
 
   <div id="words-screen" class="hidden">
-    <div class="screen-toolbar">
+    <div class="flex-row gap-lg mb-lg">
       <button onclick="goHome()" class="muted">← back</button>
       <span class="label mb-0">manage words</span>
     </div>
     <div class="card">
       <div class="label">add words</div>
       <div class="add-grid">
-        <input type="text" id="add-ko" placeholder="Korean word" />
-        <input type="text" id="add-en" placeholder="Meaning / definition" />
+        <input type="text" id="add-ko" placeholder="Word / 단어" />
+        <input type="text" id="add-en" placeholder="Definition / 정의" />
       </div>
       <div class="btn-row mt-0">
         <button onclick="addSingleWord()" class="flex-1">add word</button>
         <button onclick="toggleBulk()" class="flex-1" id="bulk-toggle-btn">bulk paste</button>
       </div>
-      <div id="bulk-area" class="hidden bulk-area">
+      <div id="bulk-area" class="hidden mt-sm">
         <textarea id="bulk-input" placeholder="One per line:&#10;갑자기 suddenly&#10;당황하다 to be flustered&#10;어쩌면 perhaps"></textarea>
         <button onclick="addBulk()" class="w-full mt-sm">add all</button>
       </div>
@@ -114,7 +114,7 @@
   </div>
 
   <div id="stories-screen" class="hidden">
-    <div class="screen-toolbar">
+    <div class="flex-row gap-lg mb-lg">
       <button onclick="goHome()" class="muted">← back</button>
       <span class="label mb-0">saved stories</span>
       <span class="muted ml-auto" id="stories-count"></span>
@@ -124,13 +124,13 @@
 
   <div id="session-screen" class="hidden">
     <div class="sess-header" style="display:none">
-      <div class="sess-toolbar">
+      <div class="flex-row gap-lg mb-sm">
         <span class="label" id="sess-round"></span>
       </div>
       <div class="phase-bar" id="phase-bar"></div>
     </div>
     <div id="phase-content"></div>
-    <div class="sess-footer">
+    <div class="flex-row gap-md mt-lg">
       <button onclick="cancelSession()" class="btn-secondary">cancel</button>
       <button id="end-early-btn" onclick="endSessionEarly()" class="btn-secondary">end early</button>
     </div>
@@ -144,9 +144,9 @@
       <button class="btn-full" onclick="goHome()">back to home</button>
     </div>
     <div id="recap-section"></div>
-    <div class="card story-card" id="story-card">
-      <div class="label story-label">오늘의 이야기</div>
-      <div id="story-sentences" class="story-sentences"></div>
+    <div class="card mt-md" id="story-card">
+      <div class="label mb-md">오늘의 이야기</div>
+      <div id="story-sentences" class="mb-lg"></div>
       <div id="story-content"></div>
     </div>
     <button class="btn-secondary mt-sm" onclick="goHome()">back to home</button>
@@ -163,7 +163,7 @@
   <div class="word-popup-form">
     <input type="text" id="popup-ko" placeholder="Korean" class="popup-input" />
     <input type="text" id="popup-en" placeholder="Meaning" class="popup-input" />
-    <button onclick="addWordFromPopup()" class="btn-full btn-primary">add to word list</button>
+    <button onclick="addWordFromPopup()" class="btn-full btn-primary mt-sm">add to word list</button>
   </div>
   <div id="popup-feedback" class="popup-feedback"></div>
 </div>

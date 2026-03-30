@@ -458,7 +458,7 @@ textarea { resize: none; min-height: 72px; }
 
 /* — Words Screen — */
 
-.add-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.add-grid { display: grid; grid-template-columns: 1fr 3fr; gap: 8px; margin-bottom: 8px; }
 
 .filter-label { font-size: var(--fs-body-sm); color: var(--text-secondary) }
 .session-size-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }

@@ -60,6 +60,30 @@ function findSimilar(ko){
 }
 
 function normalize(s){return s.replace(/\s+/g,'').replace(/[.,!?~]/g,'').toLowerCase();}
+
+// — Sound Effects —
+
+let _audioCtx=null;
+function getAudioCtx(){if(!_audioCtx) _audioCtx=new (window.AudioContext||window.webkitAudioContext)();return _audioCtx;}
+function playCorrectSound(){
+  try{
+    const ctx=getAudioCtx();
+    const now=ctx.currentTime;
+    const gain=ctx.createGain();
+    gain.connect(ctx.destination);
+    gain.gain.setValueAtTime(0.18,now);
+    gain.gain.setValueAtTime(0.18,now+0.2);
+    gain.gain.linearRampToValueAtTime(0,now+0.5);
+    [783.99, 1046.50].forEach((freq,i)=>{
+      const osc=ctx.createOscillator();
+      osc.type='sine';
+      osc.frequency.value=freq;
+      osc.connect(gain);
+      osc.start(now+i*0.08);
+      osc.stop(now+0.5);
+    });
+  }catch(e){}
+}
 function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 // — State —
@@ -349,6 +373,7 @@ function showFeedback(msg){const el=document.getElementById('add-feedback');el.t
 // — Session Flow —
 
 async function startSession(){
+  playCorrectSound();
   db=getDB();
   const due=Object.values(db.words).filter(isDue);
   const filtered=activeThemeFilter?due.filter(w=>w.theme===activeThemeFilter):due;
@@ -645,6 +670,7 @@ function selectCollocation(ko,chosenKo){
   });
   const resultEl=document.getElementById('pair-result');
   if(gotIt){
+    playCorrectSound();
     resultEl.innerHTML=`<div class="pair-feedback correct">correct ${SVG_CHECK}</div>`;
   } else {
     resultEl.innerHTML=`<div class="pair-feedback wrong">the odd one out was ${esc(coll.wrong.ko)} (${esc(coll.wrong.en)})</div>`;
@@ -1050,6 +1076,7 @@ function startVoice(expectedKo){
     if(micBtn){micBtn.className='btn-circle';micBtn.innerHTML=MIC_ICON;}
     if(input){input.value=heard;input.disabled=true;}
     if(correct){
+      playCorrectSound();
       if(input) input.style.color='var(--teal)';
       if(status) status.textContent='';
       showSayNext();
@@ -1092,6 +1119,7 @@ function checkTypedAnswer(expectedKo){
   if(status) status.textContent='';
   const correct=normalize(val)===normalize(expectedKo);
   if(correct){
+    playCorrectSound();
     input.disabled=true;
     input.style.color='var(--teal)';
     showSayNext();

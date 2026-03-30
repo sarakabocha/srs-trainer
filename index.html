@@ -81,7 +81,10 @@
       <div class="label">add words</div>
       <div class="add-grid">
         <input type="text" id="add-ko" placeholder="Word / 단어" />
-        <input type="text" id="add-en" placeholder="Definition / 정의" />
+        <div class="input-with-action">
+          <input type="text" id="add-en" placeholder="Definition / 정의" />
+          <button type="button" class="btn-tertiary btn-lookup" id="lookup-btn" onclick="lookupAddWord()" disabled>look up</button>
+        </div>
       </div>
       <div class="btn-row mt-0">
         <button onclick="addSingleWord()" class="flex-1">add word</button>

@@ -58,25 +58,6 @@
       </div>
       <button class="btn-full btn-primary" id="start-btn" onclick="startSession()">start review</button>
     </div>
-    <div class="card collapsed" id="theme-card">
-      <div class="section-head clickable" onclick="toggleThemeCard()">
-        <div class="label mb-0">themes</div>
-        <div class="flex-row gap-sm">
-          <button onclick="runGrouping();event.stopPropagation()" id="theme-refresh-btn" class="btn-sm">refresh</button>
-          <span class="toggle-icon" id="theme-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
-        </div>
-      </div>
-      <div id="theme-body" class="hidden mt-md">
-        <div id="theme-list"><div class="muted">Add an API key and words to auto-group by theme.</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-head">
-        <div class="label mb-0">struggling words</div>
-        <span class="muted" id="hard-count-label"></span>
-      </div>
-      <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
-    </div>
     <div class="card">
       <div class="label">add words</div>
       <div class="add-grid">
@@ -95,6 +76,25 @@
         <button onclick="addBulk()" class="w-full mt-sm">add all</button>
       </div>
       <div id="add-feedback"></div>
+    </div>
+    <div class="card collapsed" id="theme-card">
+      <div class="section-head clickable" onclick="toggleThemeCard()">
+        <div class="label mb-0">themes</div>
+        <div class="flex-row gap-sm">
+          <button onclick="runGrouping();event.stopPropagation()" id="theme-refresh-btn" class="btn-sm">refresh</button>
+          <span class="toggle-icon" id="theme-toggle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></span>
+        </div>
+      </div>
+      <div id="theme-body" class="hidden mt-md">
+        <div id="theme-list"><div class="muted">Add an API key and words to auto-group by theme.</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-head">
+        <div class="label mb-0">struggling words</div>
+        <span class="muted" id="hard-count-label"></span>
+      </div>
+      <div id="hard-list"><div class="muted">No words flagged as hard yet.</div></div>
     </div>
     <div class="flex-row gap-md mt-sm">
       <button class="btn-secondary flex-1" onclick="showWords()">manage words</button>
@@ -165,7 +165,10 @@
   <div id="popup-translation" class="word-popup-translation"></div>
   <div class="word-popup-form">
     <input type="text" id="popup-ko" placeholder="Korean" class="popup-input" />
-    <input type="text" id="popup-en" placeholder="Meaning" class="popup-input" />
+    <div class="input-with-action">
+      <input type="text" id="popup-en" placeholder="Meaning" class="popup-input" />
+      <button type="button" class="btn-tertiary btn-lookup" id="popup-lookup-btn" onclick="lookupPopupWord()" aria-disabled="true">look up</button>
+    </div>
     <button onclick="addWordFromPopup()" class="btn-full btn-primary mt-sm">add to word list</button>
   </div>
   <div id="popup-feedback" class="popup-feedback"></div>

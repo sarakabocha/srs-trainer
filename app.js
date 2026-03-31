@@ -817,6 +817,7 @@ function tapStoryWord(el){
   document.getElementById('popup-en').value='';
   document.getElementById('popup-feedback').textContent='';
   document.getElementById('popup-translation').innerHTML='';
+  updatePopupLookupBtn();
 
   // Check if already in word bank
   const db=getDB();
@@ -881,6 +882,25 @@ function updateLookupBtn(){
   const btn=document.getElementById('lookup-btn');
   if(!btn) return;
   const off=!getApiKey()||!document.getElementById('add-ko').value.trim();
+  btn.setAttribute('aria-disabled',off?'true':'false');
+}
+
+async function lookupPopupWord(){
+  const btn=document.getElementById('popup-lookup-btn');
+  if(btn.getAttribute('aria-disabled')==='true') return;
+  const ko=document.getElementById('popup-ko').value.trim();
+  if(!ko) return;
+  const enInput=document.getElementById('popup-en');
+  btn.setAttribute('aria-disabled','true');btn.textContent='...';
+  const translation=await translateKo(ko);
+  if(translation) enInput.value=translation;
+  btn.textContent='look up';updatePopupLookupBtn();
+}
+
+function updatePopupLookupBtn(){
+  const btn=document.getElementById('popup-lookup-btn');
+  if(!btn) return;
+  const off=!getApiKey()||!document.getElementById('popup-ko').value.trim();
   btn.setAttribute('aria-disabled',off?'true':'false');
 }
 
@@ -1309,4 +1329,5 @@ function importStories(e){
 // — Init —
 
 document.getElementById('add-ko').addEventListener('input',updateLookupBtn);
+document.getElementById('popup-ko').addEventListener('input',updatePopupLookupBtn);
 loadHome();

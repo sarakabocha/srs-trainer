@@ -34,6 +34,7 @@
   --fs-xs: 0.75em;
   --fs-body-sm: 0.875em;
   --fs-body: 1em;
+  --fs-body-lg: 1.125em;
   --fs-heading: 1.5em;
   --fs-display: 2em;
 }
@@ -522,8 +523,8 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
 
 /* — Story — */
 
-.story-text { font-family: var(--font-ui); font-size: var(--fs-body); line-height: 2; color: var(--text); }
-.story-translation { font-size: var(--fs-body-sm); line-height: 2; color: var(--text-secondary); margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
+.story-text { font-family: var(--font-ui); font-size: var(--fs-body-lg); line-height: 2; color: var(--text); }
+.story-translation { font-size: var(--fs-body); line-height: 2; color: var(--text-secondary); margin-top: 1rem; padding-top: 1rem; border-top: 0.5px solid var(--border); }
 .story-saved-card { margin-bottom: 0.75rem; }
 .story-saved-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
 .story-saved-words { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 0.75rem; }

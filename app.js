@@ -373,7 +373,6 @@ function showFeedback(msg){const el=document.getElementById('add-feedback');el.t
 // — Session Flow —
 
 async function startSession(){
-  playCorrectSound();
   db=getDB();
   const due=Object.values(db.words).filter(isDue);
   const filtered=activeThemeFilter?due.filter(w=>w.theme===activeThemeFilter):due;

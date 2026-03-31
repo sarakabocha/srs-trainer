@@ -989,7 +989,11 @@ async function getAiFeedback(phase,ko,en){
     const scoreClass=score.includes('great')?'score-great':score.includes('needs')?'score-revise':'score-ok';
     const scoreLabel=score.includes('great')?'great':score.includes('needs')?'needs work':'good';
     let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div>${esc(feed)}</div>`;
-    if(sugg&&sugg.toLowerCase()!=='none')html+=`<div class="fb-suggestion"><div class="fb-label">suggestion</div><div>${esc(sugg)}</div></div>`;
+    if(sugg&&sugg.toLowerCase()!=='none'){
+      const m=sugg.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+      if(m) html+=`<div class="fb-suggestion"><div class="fb-label">suggestion</div><div>${esc(m[1])}</div><div class="muted">${esc(m[2])}</div></div>`;
+      else html+=`<div class="fb-suggestion"><div class="fb-label">suggestion</div><div>${esc(sugg)}</div></div>`;
+    }
     html+=`</div>`;
     document.getElementById(outId).innerHTML=html;
     // Store score on the corresponding sentence record

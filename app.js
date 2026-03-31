@@ -581,7 +581,7 @@ function showSayNext(){
   const typeResult=document.getElementById('type-result');
   if(typeResult) typeResult.innerHTML=`<div class="pair-feedback correct text-center">correct ${SVG_CHECK}</div>`;
   const actions=document.querySelector('.session-actions');
-  if(actions) actions.innerHTML=`<button onclick="advancePhase()" class="ml-auto">next${isMobile?'':' <kbd>space</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
+  if(actions) actions.innerHTML=`<button onclick="advancePhase()" class="ml-auto">next${isMobile?'':' <kbd>enter</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 
 function advancePhase(){
@@ -679,7 +679,7 @@ function selectCollocation(ko,chosenKo){
   if(!gotIt&&w&&!sessionQueue.slice(sessIdx+1).find(q=>q.ko===ko)) sessionQueue.push(w);
   // Show next button
   const actions=document.querySelector('.session-actions');
-  if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>space</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
+  if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>enter</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 
 function skipPair(){
@@ -1159,7 +1159,7 @@ function giveUpTyped(expectedKo){
   sessionQueue.push(w);
   if(result) result.innerHTML='';
   const actions=document.querySelector('.session-actions');
-  if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>space</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
+  if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>enter</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 
 // — Keyboard Shortcuts —
@@ -1184,16 +1184,24 @@ document.addEventListener('keydown',function(e){
 
   if(e.key===' '||e.code==='Space'){
     e.preventDefault();
+    if(phase==='see'){
+      const revealBtn=document.querySelector('#reveal-area button');
+      if(revealBtn) revealBtn.click();
+    } else if(phase==='say'){
+      const w=sessionQueue[sessIdx]; if(w) startVoice(w.ko);
+    }
+    return;
+  }
+
+  if(e.key==='Enter'){
     if(phase==='say'){
       const ti=document.getElementById('type-ans');
       if(ti&&ti.disabled) { const btn=document.querySelector('.session-actions button'); if(btn) btn.click(); }
-      else { const w=sessionQueue[sessIdx]; if(w) startVoice(w.ko); }
     } else if(phase==='pair'){
       const allDisabled=!document.querySelector('.pair-option:not(:disabled)');
       if(allDisabled) nextWord();
-    } else {
-      const revealBtn=document.querySelector('#reveal-area button');
-      if(revealBtn) revealBtn.click();
+    } else if(phase==='use'){
+      const s=document.getElementById('use-skip');if(s)s.click();
     }
     return;
   }
@@ -1214,8 +1222,6 @@ document.addEventListener('keydown',function(e){
   } else if(e.key==='3'){
     const rateArea=document.getElementById('rate-area');
     if(rateArea&&!rateArea.classList.contains('hidden')) rateWord('hard');
-  } else if(e.key==='Enter'){
-    if(phase==='use'){const s=document.getElementById('use-skip');if(s)s.click();return;}
   }});
 
 document.addEventListener('click',function(e){

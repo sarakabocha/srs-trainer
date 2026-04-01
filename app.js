@@ -45,19 +45,6 @@ function isDue(w){if(!w.nextReview)return true;return w.nextReview<=todayStr();}
 function nextInterval(w,rating){const lvl=Math.max(0,Math.min((w.level||0),4));const arr=INTERVALS[rating]||INTERVALS.ok;const days=arr[Math.min(lvl,arr.length-1)];const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
 function updateStreak(db){const today=todayStr();if(db.lastDate===today)return;const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yd=yesterday.toISOString().slice(0,10);if(db.lastDate===yd)db.streak=(db.streak||0)+1;else if(db.lastDate!==today)db.streak=1;db.lastDate=today;}
 
-function similar(a,b){
-  if(a===b) return true;
-  if(a.includes(b)||b.includes(a)) return true;
-  if(Math.abs(a.length-b.length)>3) return false;
-  let diff=0;const len=Math.max(a.length,b.length);
-  for(let i=0;i<len;i++){if(a[i]!==b[i])diff++;}
-  return diff<=1;
-}
-
-function findSimilar(ko){
-  const db=getDB();
-  return Object.values(db.words).filter(w=>w.ko!==ko&&similar(w.ko,ko));
-}
 
 function normalize(s){return s.replace(/\s+/g,'').replace(/[.,!?~]/g,'').toLowerCase();}
 
@@ -335,12 +322,7 @@ function addSingleWord(){
   if(!ko||!en){showFeedback('Enter both Korean and meaning.');return;}
   db=getDB();
   if(db.words[ko]){showFeedback(ko+' already in bank.');return;}
-  const matches=findSimilar(ko);
-  if(matches.length){
-    showFeedback(`Added — similar word already exists: ${matches.map(w=>w.ko).join(', ')}`);
-  } else {
-    showFeedback(ko+' added.');
-  }
+  showFeedback(ko+' added.');
   db.words[ko]={ko,en,level:0,hardCount:0,nextReview:todayStr(),added:todayStr()};
   saveDB(db);
   document.getElementById('add-ko').value='';

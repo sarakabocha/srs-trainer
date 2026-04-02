@@ -447,7 +447,7 @@ function renderSessionPhase(){
       `<div class="see-remaining label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
       `<div class="card-stack-wrap">` +
       stackLayers +
-      `<div class="card see-card">` +
+      `<div class="card see-card" onclick="revealMeaning()" style="cursor:pointer">` +
       `<div class="session-body session-body-center">` +
       `<div class="flashcard-word" id="see-word">${esc(w.ko)}</div>` +
       `<div id="reveal-area"></div>` +
@@ -627,7 +627,10 @@ function nextWord(){
 function revealMeaning(){
   const w=sessionQueue[sessIdx];
   const wordEl=document.getElementById('see-word');
-  if(wordEl) wordEl.classList.add('flashcard-word-faded');
+  if(!wordEl||wordEl.classList.contains('flashcard-word-faded')) return;
+  wordEl.classList.add('flashcard-word-faded');
+  const card=document.querySelector('.see-card');
+  if(card){card.style.cursor='';card.onclick=null;}
   document.getElementById('reveal-area').innerHTML=`<div class="reveal-answer-text">${esc(w.en)}</div>`;
   const seeAction=document.getElementById('see-action');
   if(seeAction) seeAction.classList.add('hidden');

@@ -348,7 +348,8 @@ textarea { resize: none; min-height: 72px; }
 
 .card-stack-layer {
   position: absolute;
-  inset: 0;
+  left: 0; right: 0; top: 0;
+  aspect-ratio: 1 / 1;
   background: var(--bg);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-lg);
@@ -903,17 +904,25 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
     display: flex;
     flex-direction: column;
   }
-  #phase-content > .card,
-  #phase-content > .card-stack-wrap > .card {
+  #phase-content > .card {
     min-height: 0;
     flex: 1;
     display: flex;
     flex-direction: column;
   }
-  #phase-content > .card-stack-wrap {
-    flex: 1;
+  #phase-content > .card-stack-wrap > .card {
     display: flex;
     flex-direction: column;
+  }
+  #phase-content > .card-stack-wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .see-action,
+  .rate-area-outside {
+    margin-top: auto;
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
   }
   .session-body { flex: 1; }
   .session-actions {
@@ -923,8 +932,5 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   }
   #session-screen {
     padding-bottom: env(safe-area-inset-bottom, 0);
-  }
-  .rate-area-outside {
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
   }
 }

@@ -503,6 +503,10 @@ function renderSessionPhase(){
     const opts=shuffleArray([...coll.options]);
     const kbdNums=isMobile?['','','','']:['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>','<kbd>4</kbd>'];
     const remaining = sessionQueue.length - sessIdx - 1;
+    const stackLayers = remaining > 0
+      ? `<div class="card-stack-layer card-stack-1"></div>` +
+        (remaining > 1 ? `<div class="card-stack-layer card-stack-2"></div>` : '')
+      : '';
     const optBtns = opts.map((o, i) =>
       `<button class="pair-option" onclick="selectCollocation(${escJS(w.ko)},${escJS(o.ko)})">` +
       `<span class="pair-num">${kbdNums[i] || i + 1}</span>` +
@@ -510,18 +514,19 @@ function renderSessionPhase(){
       `</button>`
     ).join('');
     el.innerHTML =
-      `<div class="card"><div class="session-body">` +
-      `<div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
-      `<div class="phase-center">` +
+      `<div class="see-remaining label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
+      `<div class="card-stack-wrap">` +
+      stackLayers +
+      `<div class="card see-card">` +
+      `<div class="session-body session-body-center">` +
       `<div class="prompt-text mb-sm">which does NOT pair with</div>` +
       `<div class="flashcard-word">${esc(w.ko)}</div>` +
-      `</div>` +
       `<div id="pair-options">${optBtns}</div>` +
       `<div id="pair-result" class="pair-result"></div>` +
-      `</div>` +
-      `<div class="session-actions session-actions-end">` +
+      `</div></div></div>` +
+      `<div id="pair-action" class="see-action" style="text-align:right">` +
       `<button onclick="skipPair()" class="ml-auto">skip ${SVG_ARROW_RIGHT}</button>` +
-      `</div></div>`;
+      `</div>`;
   } else if(phase==='use'){
     const remaining = sessionQueue.length - sessIdx - 1;
     const ctx = sessionContexts[sessIdx] || (sessionContexts[sessIdx] = CONTEXTS[Math.floor(Math.random() * CONTEXTS.length)](w.ko, w.en));
@@ -588,11 +593,13 @@ function nextWord(){
       // Update remaining label
       const remLabel=document.querySelector('.see-remaining');
       if(remLabel) remLabel.textContent=`${remaining} word${remaining!==1?'s':''} left`;
-      // Reset card: remove exit, put content back
+      // Reset card: remove exit, restore click-to-reveal
       card.classList.remove('see-card-exit');
       card.style.transition='none';
       card.style.opacity='1';
       card.style.transform='';
+      card.style.cursor='pointer';
+      card.onclick=revealMeaning;
       card.innerHTML=
         `<div class="session-body session-body-center see-content-enter">`+
         `<div class="flashcard-word" id="see-word">${esc(w.ko)}</div>`+
@@ -755,7 +762,7 @@ function selectCollocation(ko,chosenKo){
   const w=sessionQueue[sessIdx];
   if(!gotIt&&w&&!sessionQueue.slice(sessIdx+1).find(q=>q.ko===ko)) sessionQueue.push(w);
   // Show next button
-  const actions=document.querySelector('.session-actions');
+  const actions=document.getElementById('pair-action');
   if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>enter</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 

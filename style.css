@@ -785,7 +785,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   outline: none;
   background: transparent;
   font-family: var(--font-ui);
-  font-size: var(--fs-heading);
+  font-size: var(--fs-display);
   color: var(--text);
   text-align: center;
   width: 100%;
@@ -800,6 +800,10 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
 
 /* — Collocation Quiz — */
 
+#pair-options {
+  width: 100%;
+}
+
 .pair-option {
   width: 100%;
   text-align: left;
@@ -808,7 +812,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   border: 0.5px solid var(--border-hover);
   border-radius: var(--radius-md);
   background: transparent;
-  font-size: var(--fs-body);
+  font-size: var(--fs-body-lg);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -872,8 +876,8 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   .rate-row button { padding: 12px 6px; font-size: var(--fs-body); }
   .btn-circle { width: 80px; height: 80px; touch-action: manipulation; }
   .btn-row { gap: 6px; }
-  textarea { font-size: 16px; }
-  input[type=text]:not(.type-input) { font-size: 16px; }
+  textarea { font-size: var(--fs-body-lg); }
+  input[type=text]:not(.type-input) { font-size: var(--fs-body-lg); }
   .theme-pill { padding: 6px 12px; }
   .word-row {
     padding: 10px 0;

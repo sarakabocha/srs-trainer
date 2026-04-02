@@ -467,25 +467,25 @@ function renderSessionPhase(){
   } else if(phase==='say'){
     const remaining = sessionQueue.length - sessIdx - 1;
     const hasSpeech = ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
-    el.innerHTML=`<div class="card">
-      <div class="session-body">
-        <div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>
-        <div class="phase-center">
-          <div class="prompt-text mb-sm">how do you say</div>
-          <div class="prompt-word">${esc(w.en)}</div>
-          <div class="prompt-text mt-sm">in Korean?</div>
-        </div>
-        ${hasSpeech ? `
-        <button class="btn-circle" id="btn-circle" onclick="startVoice(${escJS(w.ko)})">${MIC_ICON}</button>
-        <div id="voice-status" class="text-center voice-status">tap mic or type below</div>`
-        : ''}
-        <div class="type-input-wrap"><input class="type-input" id="type-ans" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>
-        <div id="type-result" class="type-result"></div>
-      </div>
-      <div class="session-actions session-actions-end">
-        <button onclick="skipRecall()">skip ${SVG_ARROW_RIGHT}</button>
-      </div>
-    </div>`;
+    const stackLayers = remaining > 0
+      ? `<div class="card-stack-layer card-stack-1"></div>` +
+        (remaining > 1 ? `<div class="card-stack-layer card-stack-2"></div>` : '')
+      : '';
+    el.innerHTML=
+      `<div class="see-remaining label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
+      `<div class="card-stack-wrap">` +
+      stackLayers +
+      `<div class="card see-card">` +
+      `<div class="session-body session-body-center">` +
+      `<div class="flashcard-word">${esc(w.en)}</div>` +
+      `${hasSpeech ? `<button class="btn-circle" id="btn-circle" onclick="startVoice(${escJS(w.ko)})">${MIC_ICON}</button>` : ''}` +
+      `<div class="type-input-wrap"><input class="type-input" id="type-ans" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>` +
+      `<div id="type-result" class="type-result"></div>` +
+      `<div id="voice-status" class="hidden"></div>` +
+      `</div></div></div>` +
+      `<div id="say-action" class="see-action" style="text-align:right">` +
+      `<button onclick="skipRecall()">skip ${SVG_ARROW_RIGHT}</button>` +
+      `</div>`;
     setTimeout(()=>{
       const ti=document.getElementById('type-ans');
       if(ti){
@@ -657,7 +657,7 @@ function rateWord(rating){
 function showSayNext(){
   const typeResult=document.getElementById('type-result');
   if(typeResult) typeResult.innerHTML=`<div class="pair-feedback correct text-center">correct ${SVG_CHECK}</div>`;
-  const actions=document.querySelector('.session-actions');
+  const actions=document.getElementById('say-action');
   if(actions) actions.innerHTML=`<button onclick="advancePhase()" class="ml-auto">next${isMobile?'':' <kbd>enter</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 
@@ -1227,13 +1227,20 @@ function startVoice(expectedKo){
   rec.start();
 }
 
+function retryTyped(expectedKo){
+  const input=document.getElementById('type-ans');
+  const typeResult=document.getElementById('type-result');
+  if(input){input.value='';input.disabled=false;input.style.color='var(--text)';input.focus();}
+  if(typeResult) typeResult.innerHTML='';
+}
+
 function retryVoice(expectedKo){
   const input=document.getElementById('type-ans');
   const typeResult=document.getElementById('type-result');
   const status=document.getElementById('voice-status');
   if(input){input.value='';input.disabled=false;input.style.color='var(--text)';}
   if(typeResult) typeResult.innerHTML='';
-  if(status) status.textContent='tap mic or type below';
+  if(status) status.textContent='';
   startVoice(expectedKo);
 }
 
@@ -1253,8 +1260,8 @@ function checkTypedAnswer(expectedKo){
     showSayNext();
   } else {
     input.style.color='var(--red)';
-    result.innerHTML=`<div class="give-up-text">not quite — try again or <button class="btn-tertiary give-up-link" onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
-    setTimeout(()=>{input.style.color='var(--text)';},600);
+    result.innerHTML=`<div class="btn-row" style="justify-content:center"><button onclick="retryTyped(${escJS(expectedKo)})">retry</button><button onclick="giveUpTyped(${escJS(expectedKo)})">give up</button></div>`;
+    input.disabled=true;
   }
 }
 
@@ -1266,7 +1273,7 @@ function giveUpTyped(expectedKo){
   sessRecallResults.push({ko:w.ko,en:w.en,result:'gave-up'});
   sessionQueue.push(w);
   if(result) result.innerHTML='';
-  const actions=document.querySelector('.session-actions');
+  const actions=document.getElementById('say-action');
   if(actions) actions.innerHTML=`<button onclick="nextWord()" class="ml-auto">next${isMobile?'':' <kbd>enter</kbd>'} ${SVG_ARROW_RIGHT}</button>`;
 }
 

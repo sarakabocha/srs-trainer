@@ -27,6 +27,11 @@ const SVG_ARROW_RIGHT='<svg class="svg-icon-inline" viewBox="0 0 24 24" fill="no
 const SVG_CHECK='<svg class="svg-icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const MIC_ICON=`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`;
 const MIC_ICON_ACTIVE=`<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>`;
+const SVG_WAVE='<svg class="svg-icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2-4 6 4 10 0s6-4 10 0"/><path d="M2 17c2-4 6 4 10 0s6-4 10 0"/><path d="M2 7c2-4 6 4 10 0s6-4 10 0"/></svg>';
+const SVG_X_MARK='<svg class="svg-icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+const SVG_TRASH='<svg class="svg-icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
+const SVG_SKIP_FWD='<svg class="svg-icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>';
+const SVG_X_CLOSE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
 
 // — Utilities —
 
@@ -417,6 +422,8 @@ function renderPhaseBar(){
   const nameMap={see:'see it',say:'say it',pair:'pair it',use:'use it'};
   const el=document.getElementById('sess-round');
   if(el) el.textContent=`round ${sessPhase+1} — ${nameMap[phaseMap[sessPhase]]||''}`;
+  const closeBtn=document.querySelector('.btn-close-session');
+  if(closeBtn&&!closeBtn.innerHTML.trim()) closeBtn.innerHTML=SVG_X_CLOSE;
 }
 
 function renderSessionPhase(){
@@ -429,22 +436,34 @@ function renderSessionPhase(){
     const remaining = sessionQueue.length - sessIdx - 1;
     const kbdHints = isMobile ? '' : '<kbd>space</kbd>';
     const kbdR = isMobile ? ['','',''] : ['<kbd>1</kbd>','<kbd>2</kbd>','<kbd>3</kbd>'];
+    const rateGood = isMobile ? SVG_CHECK : `knew it ${kbdR[0]}`;
+    const rateOk = isMobile ? SVG_WAVE : `vaguely ${kbdR[1]}`;
+    const rateHard = isMobile ? SVG_X_MARK : `forgot ${kbdR[2]}`;
+    const stackLayers = remaining > 0
+      ? `<div class="card-stack-layer card-stack-1"></div>` +
+        (remaining > 1 ? `<div class="card-stack-layer card-stack-2"></div>` : '')
+      : '';
     el.innerHTML =
-      `<div class="card">` +
+      `<div class="see-remaining label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
+      `<div class="card-stack-wrap">` +
+      stackLayers +
+      `<div class="card see-card">` +
       `<div class="session-body session-body-center">` +
-      `<div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
-      `<div class="flashcard-word">${esc(w.ko)}</div>` +
-      `<div id="reveal-area" class="w-full">` +
+      `<div class="flashcard-word" id="see-word">${esc(w.ko)}</div>` +
+      `<div id="reveal-area"></div>` +
+      `</div></div></div>` +
+      `<div id="see-action" class="see-action">` +
       `<button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button>` +
-      `</div></div>` +
-      `<div class="session-actions">` +
-      `<div id="rate-area" class="hidden">` +
-      `<div class="label">how well did you remember?</div>` +
-      `<div class="rate-row mt-lg">` +
-      `<button class="btn-success" onclick="rateWord('good')">knew it ${kbdR[0]}</button>` +
-      `<button onclick="rateWord('ok')">vaguely ${kbdR[1]}</button>` +
-      `<button class="btn-danger" onclick="rateWord('hard')">forgot ${kbdR[2]}</button>` +
-      `</div></div></div></div>`;
+      `</div>` +
+      `<div id="rate-area" class="rate-area-outside hidden">` +
+      `<div class="rate-label">HOW WELL DID YOU REMEMBER?</div>` +
+      `<div class="rate-row">` +
+      `<button class="btn-rate btn-success" onclick="rateWord('good')">${rateGood}</button>` +
+      `<button class="btn-rate" onclick="rateWord('ok')">${rateOk}</button>` +
+      `<button class="btn-rate btn-danger" onclick="rateWord('hard')">${rateHard}</button>` +
+      `</div>` +
+      `<div id="hard-flag-label"></div>` +
+      `</div>`;
   } else if(phase==='say'){
     const remaining = sessionQueue.length - sessIdx - 1;
     const hasSpeech = ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
@@ -527,25 +546,98 @@ function stopRecognition(){
 
 function nextWord(){
   stopRecognition();
-  sessIdx++;
-  if(sessIdx>=sessionQueue.length){
-    sessPhase++;
-    sessIdx=0;
-    sessionContexts=[];
-    // Deduplicate queue — remove retry copies from the previous phase
-    const seen=new Set();
-    sessionQueue=sessionQueue.filter(w=>{if(seen.has(w.ko))return false;seen.add(w.ko);return true;});
+  const wasSee = phaseMap[sessPhase]==='see';
+  const card = wasSee && document.querySelector('.see-card');
+  const rateArea = wasSee && document.getElementById('rate-area');
+
+  function advance(){
+    sessIdx++;
+    if(sessIdx>=sessionQueue.length){
+      sessPhase++;
+      sessIdx=0;
+      sessionContexts=[];
+      const seen=new Set();
+      sessionQueue=sessionQueue.filter(w=>{if(seen.has(w.ko))return false;seen.add(w.ko);return true;});
+    }
+    if(sessPhase>=phaseMap.length){endSession();return;}
+    renderSessionPhase();
   }
-  if(sessPhase>=phaseMap.length){endSession();return;}
-  renderSessionPhase();
+
+  if(card){
+    card.classList.add('see-card-exit');
+    if(rateArea) rateArea.style.opacity='0';
+    const layer1=document.querySelector('.card-stack-1');
+    const layer2=document.querySelector('.card-stack-2');
+    if(layer1) layer1.classList.add('card-stack-promote');
+    if(layer2) layer2.classList.add('card-stack-promote-2');
+    // Wait for exit + promote, then swap content in-place
+    setTimeout(()=>{
+      // Advance index
+      sessIdx++;
+      if(sessIdx>=sessionQueue.length){
+        sessPhase++;sessIdx=0;sessionContexts=[];
+        const seen=new Set();
+        sessionQueue=sessionQueue.filter(w=>{if(seen.has(w.ko))return false;seen.add(w.ko);return true;});
+      }
+      if(sessPhase>=phaseMap.length){endSession();return;}
+      if(phaseMap[sessPhase]!=='see'){renderSessionPhase();return;}
+      // Still in see phase — swap content without full re-render
+      const w=sessionQueue[sessIdx];
+      const remaining=sessionQueue.length-sessIdx-1;
+      const kbdHints=isMobile?'':'<kbd>space</kbd>';
+      // Update remaining label
+      const remLabel=document.querySelector('.see-remaining');
+      if(remLabel) remLabel.textContent=`${remaining} word${remaining!==1?'s':''} left`;
+      // Reset card: remove exit, put content back
+      card.classList.remove('see-card-exit');
+      card.style.transition='none';
+      card.style.opacity='1';
+      card.style.transform='';
+      card.innerHTML=
+        `<div class="session-body session-body-center see-content-enter">`+
+        `<div class="flashcard-word" id="see-word">${esc(w.ko)}</div>`+
+        `<div id="reveal-area"></div>`+
+        `</div>`;
+      // Reset show meaning button
+      const seeAction=document.getElementById('see-action');
+      if(seeAction){seeAction.classList.remove('hidden');seeAction.innerHTML=`<button class="btn-full" onclick="revealMeaning()">show meaning ${kbdHints}</button>`;}
+      // Reset stack layers
+      if(layer1){layer1.classList.remove('card-stack-promote');layer1.style='';}
+      if(layer2){layer2.classList.remove('card-stack-promote-2');layer2.style='';}
+      // Update stack layers for new remaining count
+      const wrap=document.querySelector('.card-stack-wrap');
+      if(wrap){
+        wrap.querySelectorAll('.card-stack-layer').forEach(l=>l.remove());
+        if(remaining>0) wrap.insertAdjacentHTML('afterbegin','<div class="card-stack-layer card-stack-1"></div>'+(remaining>1?'<div class="card-stack-layer card-stack-2"></div>':''));
+      }
+      // Reset rate area
+      if(rateArea){rateArea.classList.add('hidden');rateArea.classList.remove('rate-area-reveal');rateArea.style.opacity='';
+        const hl=document.getElementById('hard-flag-label');if(hl)hl.innerHTML='';
+      }
+      renderPhaseBar();
+      // Force reflow then restore transition
+      void card.offsetHeight;
+      card.style.transition='';
+    },300);
+  } else {
+    advance();
+  }
 }
 
 function revealMeaning(){
   const w=sessionQueue[sessIdx];
-  document.getElementById('reveal-area').innerHTML=`<div class="answer-box text-center"><span class="reveal-answer">${esc(w.en)}</span>${w.hardCount>0?`<div class="muted reveal-hard">flagged hard ${w.hardCount}x</div>`:''}</div>`;
+  const wordEl=document.getElementById('see-word');
+  if(wordEl) wordEl.classList.add('flashcard-word-faded');
+  document.getElementById('reveal-area').innerHTML=`<div class="reveal-answer-text">${esc(w.en)}</div>`;
+  const seeAction=document.getElementById('see-action');
+  if(seeAction) seeAction.classList.add('hidden');
   const rateArea=document.getElementById('rate-area');
   rateArea.classList.remove('hidden');
   rateArea.classList.add('rate-area-reveal');
+  if(w.hardCount>0){
+    const hl=document.getElementById('hard-flag-label');
+    if(hl) hl.innerHTML=`<div class="muted reveal-hard">flagged hard ${w.hardCount}x</div>`;
+  }
 }
 
 
@@ -744,15 +836,42 @@ function renderRecap(){
   document.getElementById('recap-section').innerHTML=html;
 }
 
-function endSessionEarly(){sessionContexts=[];endSession();}
+function endSessionEarly(){closeEndSessionModal();sessionContexts=[];endSession();}
 
 function cancelSession(){
-  if(!confirm('Cancel session? No progress will be saved.')) return;
+  closeEndSessionModal();
   if(dbSnapshot) saveDB(JSON.parse(dbSnapshot));
   dbSnapshot=null;
   stopRecognition();
   showScreen('home');
   loadHome();
+}
+
+function openEndSessionModal(){
+  const overlay=document.getElementById('end-session-overlay');
+  const modal=document.getElementById('end-session-modal');
+  const trashIcon=document.getElementById('modal-trash-icon');
+  const skipIcon=document.getElementById('modal-skip-icon');
+  if(trashIcon&&!trashIcon.innerHTML.trim()) trashIcon.innerHTML=SVG_TRASH;
+  if(skipIcon&&!skipIcon.innerHTML.trim()) skipIcon.innerHTML=SVG_SKIP_FWD;
+  overlay.classList.remove('hidden');
+  modal.classList.remove('hidden');
+  requestAnimationFrame(()=>{
+    overlay.classList.add('visible');
+    modal.classList.add('visible');
+  });
+}
+
+function closeEndSessionModal(){
+  const overlay=document.getElementById('end-session-overlay');
+  const modal=document.getElementById('end-session-modal');
+  if(!overlay||!modal) return;
+  overlay.classList.remove('visible');
+  modal.classList.remove('visible');
+  setTimeout(()=>{
+    overlay.classList.add('hidden');
+    modal.classList.add('hidden');
+  },200);
 }
 
 function goHome(){
@@ -1156,6 +1275,11 @@ document.addEventListener('keydown',function(e){
   const tag=document.activeElement.tagName;
   const inText=tag==='TEXTAREA'||tag==='INPUT';
 
+  if(e.key==='Escape'){
+    const modal=document.getElementById('end-session-modal');
+    if(modal&&modal.classList.contains('visible')){closeEndSessionModal();return;}
+  }
+
   const phase=phaseMap[sessPhase];
 
   if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){
@@ -1171,7 +1295,7 @@ document.addEventListener('keydown',function(e){
   if(e.key===' '||e.code==='Space'){
     e.preventDefault();
     if(phase==='see'){
-      const revealBtn=document.querySelector('#reveal-area button');
+      const revealBtn=document.querySelector('#see-action button');
       if(revealBtn) revealBtn.click();
     } else if(phase==='say'){
       const w=sessionQueue[sessIdx]; if(w) startVoice(w.ko);

@@ -127,16 +127,13 @@
 
   <div id="session-screen" class="hidden">
     <div class="sess-header" style="display:none">
-      <div class="flex-row gap-lg mb-sm">
+      <div class="flex-row gap-lg mb-sm" style="align-items:center">
         <span class="label" id="sess-round"></span>
+        <button class="btn-close-session" onclick="openEndSessionModal()" title="End session"></button>
       </div>
       <div class="phase-bar" id="phase-bar"></div>
     </div>
     <div id="phase-content"></div>
-    <div class="flex-row gap-md mt-lg">
-      <button onclick="cancelSession()" class="btn-secondary">cancel</button>
-      <button id="end-early-btn" onclick="endSessionEarly()" class="btn-secondary">end early</button>
-    </div>
   </div>
 
   <div id="done-screen" class="hidden">
@@ -153,6 +150,16 @@
       <div id="story-content"></div>
     </div>
     <button class="btn-secondary mt-sm" onclick="goHome()">back to home</button>
+  </div>
+</div>
+
+<div id="end-session-overlay" class="word-popup-overlay hidden" onclick="closeEndSessionModal()"></div>
+<div id="end-session-modal" class="word-popup end-session-modal hidden">
+  <div class="end-session-title">END SESSION?</div>
+  <div class="end-session-actions">
+    <button class="btn-full btn-cancel-session" onclick="cancelSession()"><span class="modal-icon" id="modal-trash-icon"></span> cancel and lose progress</button>
+    <button class="btn-full btn-end-early" onclick="endSessionEarly()"><span class="modal-icon" id="modal-skip-icon"></span> end early</button>
+    <button class="btn-full btn-secondary" onclick="closeEndSessionModal()">cancel</button>
   </div>
 </div>
 

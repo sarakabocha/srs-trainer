@@ -3,18 +3,34 @@
 const isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
 const CONTEXTS=[
-  (ko,en)=>`Someone just did something unexpected. Describe what happened using "${ko}" (${en}) — make it specific and vivid.`,
-  (ko,en)=>`You're texting a friend about your day. Work "${ko}" (${en}) into the message naturally — one or two sentences.`,
-  (ko,en)=>`A character in a drama turns to the camera and says something using "${ko}" (${en}). Write the line.`,
-  (ko,en)=>`Finish this thought in Korean using "${ko}" (${en}):\n"솔직히 말하면..."  (Honestly speaking...)`,
-  (ko,en)=>`Describe a moment when you — or someone you know — would feel or say "${ko}" (${en}). Be specific.`,
-  (ko,en)=>`What's the difference between "${ko}" (${en}) and a word with a similar meaning? Show it in a sentence.`,
-  (ko,en)=>`You're giving advice to a friend. Use "${ko}" (${en}) somewhere in your advice.`,
-  (ko,en)=>`Write a one-sentence observation about life, people, or the world using "${ko}" (${en}).`,
-  (ko,en)=>`Set the scene: where are you, what time is it, what's happening — and use "${ko}" (${en}) somewhere in it.`,
-  (ko,en)=>`Finish this sentence in Korean using "${ko}" (${en}):\n"요즘 들어서..."  (Lately I've been noticing...)`,
-  (ko,en)=>`Write the internal monologue of someone experiencing "${ko}" (${en}) right now. One or two sentences.`,
-  (ko,en)=>`Use "${ko}" (${en}) to describe something you noticed, felt, or thought about recently — real or invented.`,
+  // Conversational — reply to someone
+  (ko,en)=>`Your friend says: "요즘 뭐 하고 있어?" Reply using "${ko}" (${en}).`,
+  (ko,en)=>`A coworker asks: "주말에 뭐 했어요?" Answer using "${ko}" (${en}).`,
+  (ko,en)=>`Your friend texts: "나 고민이 있어..." Give advice using "${ko}" (${en}).`,
+  (ko,en)=>`Someone asks: "그거 어땠어?" Describe your experience using "${ko}" (${en}).`,
+  (ko,en)=>`A friend says: "한국어 왜 배워?" Explain using "${ko}" (${en}).`,
+  (ko,en)=>`Your friend asks: "요즘 무슨 드라마 봐?" Reply and work in "${ko}" (${en}).`,
+  (ko,en)=>`Someone asks: "그 사람 어때?" Describe them using "${ko}" (${en}).`,
+  (ko,en)=>`A friend complains: "너무 힘들어..." Respond using "${ko}" (${en}).`,
+  (ko,en)=>`Your friend says: "이거 해 본 적 있어?" Answer using "${ko}" (${en}).`,
+  (ko,en)=>`Someone asks: "왜 그렇게 생각해?" Explain your reasoning using "${ko}" (${en}).`,
+  // Personal — about your life
+  (ko,en)=>`Describe something that happened to you this week using "${ko}" (${en}).`,
+  (ko,en)=>`Write a text to a friend about your plans for tomorrow. Use "${ko}" (${en}).`,
+  (ko,en)=>`Describe a habit of yours — good or bad — using "${ko}" (${en}).`,
+  (ko,en)=>`Something surprised you recently. Describe it using "${ko}" (${en}).`,
+  (ko,en)=>`Write about a place you like going to. Use "${ko}" (${en}).`,
+  // Situational — specific scenarios
+  (ko,en)=>`You're ordering at a restaurant and explaining what you want. Use "${ko}" (${en}).`,
+  (ko,en)=>`You're leaving a review for something you bought. Use "${ko}" (${en}).`,
+  (ko,en)=>`You're explaining why you were late. Use "${ko}" (${en}).`,
+  (ko,en)=>`You're recommending something to a friend. Use "${ko}" (${en}).`,
+  (ko,en)=>`You're apologizing to someone. Use "${ko}" (${en}) in your apology.`,
+  // Sentence starters
+  (ko,en)=>`Finish this in Korean using "${ko}" (${en}):\n"솔직히 말하면..." (honestly speaking...)`,
+  (ko,en)=>`Finish this in Korean using "${ko}" (${en}):\n"그때 알았어..." (that's when I realized...)`,
+  (ko,en)=>`Finish this in Korean using "${ko}" (${en}):\n"처음에는 몰랐는데..." (at first I didn't know, but...)`,
+  (ko,en)=>`Finish this in Korean using "${ko}" (${en}):\n"만약에..." (if...)`,
 ];
 const INTERVALS={good:[1,3,7,14,30],ok:[1,2,4,10],hard:[0,0,1,2]};
 const SESSION_SIZES=[5,10,15,0];
@@ -165,6 +181,8 @@ function loadHome(){
     ?activeThemeFilter?`No words due in "${activeThemeFilter}" — try another theme or check back tomorrow.`:'No words due — check back tomorrow, or add new words below.'
     :`${filteredDue.length} word${filteredDue.length>1?'s':''} ready for review.${hard.length>0&&!activeThemeFilter?' Includes '+hard.length+' hard word'+(hard.length>1?'s':'')+'.':''}`;
   document.getElementById('start-btn').disabled=filteredDue.length===0;
+  const caret=document.getElementById('start-caret');
+  if(caret){caret.disabled=filteredDue.length===0;if(!caret.innerHTML.trim())caret.innerHTML=SVG_CHEVRON_DOWN;}
   renderSessionSizes(filteredDue.length);
   renderHardList(hard);
   renderThemes();
@@ -359,7 +377,21 @@ function showFeedback(msg){const el=document.getElementById('add-feedback');el.t
 
 // — Session Flow —
 
+let selectedRounds='all';
+
+function toggleRoundPicker(){
+  document.getElementById('round-picker').classList.toggle('hidden');
+}
+
+function startRound(phase){
+  document.getElementById('round-picker').classList.add('hidden');
+  selectedRounds=phase;
+  startSession();
+}
+
 async function startSession(){
+  const roundChoice=selectedRounds;
+  selectedRounds='all';
   db=getDB();
   const due=Object.values(db.words).filter(isDue);
   const filtered=activeThemeFilter?due.filter(w=>w.theme===activeThemeFilter):due;
@@ -371,9 +403,15 @@ async function startSession(){
   dbSnapshot=JSON.stringify(db);
   showScreen('session');
   const endBtn=document.getElementById('end-early-btn');
-  // Load collocations if API key available
-  if(getApiKey()){
-    if(endBtn) endBtn.classList.add('hidden');
+  // Build phase map based on round selection
+  if(roundChoice!=='all'){
+    const needsCollocations=roundChoice==='pair';
+    if(needsCollocations&&getApiKey()){
+      document.getElementById('phase-content').innerHTML=`<div class="card session-loading"><div class="ai-loading">preparing session...</div></div>`;
+      await loadCollocations(sessionQueue);
+    }
+    phaseMap=[roundChoice];
+  } else if(getApiKey()){
     document.getElementById('phase-content').innerHTML=`<div class="card session-loading"><div class="ai-loading">preparing session...</div></div>`;
     const ok=await loadCollocations(sessionQueue);
     phaseMap=ok?['see','say','pair','use']:['see','say','use'];
@@ -531,16 +569,24 @@ function renderSessionPhase(){
     const remaining = sessionQueue.length - sessIdx - 1;
     const ctx = sessionContexts[sessIdx] || (sessionContexts[sessIdx] = CONTEXTS[Math.floor(Math.random() * CONTEXTS.length)](w.ko, w.en));
     const hasKey = !!getApiKey();
+    const stackLayers = remaining > 0
+      ? `<div class="card-stack-layer card-stack-1"></div>` +
+        (remaining > 1 ? `<div class="card-stack-layer card-stack-2"></div>` : '')
+      : '';
     el.innerHTML =
-      `<div class="card"><div class="session-body">` +
-      `<div class="label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
+      `<div class="see-remaining label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
+      `<div class="card-stack-wrap">` +
+      stackLayers +
+      `<div class="card see-card use-card">` +
+      `<div class="session-body">` +
       `<div class="prompt-text prompt-context">${esc(ctx)}</div>` +
       `<textarea id="use-ans" placeholder="Write in Korean..."></textarea>` +
       `${hasKey?`<button class="btn-full mt-sm mb-sm" onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:''}` +
       `<div id="use-ai-feedback"></div>` +
-      `</div><div class="session-actions session-actions-end">` +
+      `</div></div></div>` +
+      `<div id="use-action" class="see-action" style="text-align:right">` +
       `<button id="use-skip" onclick="skipUse()">skip ${SVG_ARROW_RIGHT}</button>` +
-      `</div></div>`;
+      `</div>`;
     setTimeout(() => document.getElementById('use-ans')?.focus(), 50);
   }
 }
@@ -1081,7 +1127,8 @@ async function getAiFeedback(phase,ko,en){
   const answer=document.getElementById(ansId)?.value?.trim();
   if(!answer){document.getElementById(outId).innerHTML=`<div class="ai-loading">Write something first.</div>`;return;}
   document.getElementById(outId).innerHTML=`<div class="ai-loading">evaluating...</div>`;
-  const prompt=`You are a Korean language tutor for an upper-intermediate learner. The target word is "${ko}" (${en}).\n\nThe learner wrote this Korean sentence:\n"${answer}"\n\nEvaluate in 3 parts, be concise:\n1. SCORE: one of — great / good / needs work\n2. FEEDBACK: 1-2 sentences on grammar, naturalness, or word usage. Be specific.\n3. SUGGESTION: If score is not "great", rewrite the sentence more naturally. The suggestion MUST use the target word "${ko}". (Korean only, then translation in parentheses). If great, skip this.\n\nReply in this exact format:\nSCORE: [great/good/needs work]\nFEEDBACK: [your feedback]\nSUGGESTION: [improved sentence using ${ko} (translation)] or none`;
+  const ctx=sessionContexts[sessIdx]||'';
+  const prompt=`You are a Korean language tutor for an upper-intermediate learner. The target word is "${ko}" (${en}).\n\nThe learner was given this prompt:\n"${ctx}"\n\nThe learner wrote:\n"${answer}"\n\nEvaluate in 3 parts, be concise:\n1. SCORE: one of — great / good / needs work\n2. FEEDBACK: 1-2 sentences on grammar, naturalness, or word usage. Did they respond appropriately to the prompt? Be specific.\n3. SUGGESTION: If score is not "great", rewrite the sentence more naturally. The suggestion MUST use the target word "${ko}". (Korean only, then translation in parentheses). If great, skip this.\n\nReply in this exact format:\nSCORE: [great/good/needs work]\nFEEDBACK: [your feedback]\nSUGGESTION: [improved sentence using ${ko} (translation)] or none`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -1099,13 +1146,12 @@ async function getAiFeedback(phase,ko,en){
     const sugg=(suggM?.[1]||'').trim();
     const scoreClass=score.includes('great')?'score-great':score.includes('needs')?'score-revise':'score-ok';
     const scoreLabel=score.includes('great')?'great':score.includes('needs')?'needs work':'good';
-    let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div>${esc(feed)}</div>`;
+    let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div>${esc(feed)}</div></div>`;
     if(sugg&&sugg.toLowerCase()!=='none'){
       const m=sugg.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
       if(m) html+=`<div class="fb-suggestion"><div class="fb-label">suggestion</div><div>${esc(m[1])}</div><div class="muted">${esc(m[2])}</div></div>`;
       else html+=`<div class="fb-suggestion"><div class="fb-label">suggestion</div><div>${esc(sugg)}</div></div>`;
     }
-    html+=`</div>`;
     document.getElementById(outId).innerHTML=html;
     // Store score on the corresponding sentence record
     const existing=sessUseSentences.find(s=>s.ko===ko);

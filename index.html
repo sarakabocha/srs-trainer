@@ -56,7 +56,16 @@
         <span class="filter-label">words per session</span>
         <div id="session-size-btns" class="flex-row gap-sm ml-auto"></div>
       </div>
-      <button class="btn-full btn-primary" id="start-btn" onclick="startSession()">start review</button>
+      <div class="start-split">
+        <button class="btn-primary start-main" id="start-btn" onclick="startSession()">start review</button>
+        <button class="btn-primary start-caret" id="start-caret" onclick="toggleRoundPicker()"></button>
+      </div>
+      <div id="round-picker" class="round-picker hidden">
+        <button class="round-option" onclick="startRound('see')">round 1 — see it</button>
+        <button class="round-option" onclick="startRound('say')">round 2 — say it</button>
+        <button class="round-option" onclick="startRound('pair')">round 3 — pair it</button>
+        <button class="round-option" onclick="startRound('use')">round 4 — use it</button>
+      </div>
     </div>
     <div class="card">
       <div class="label">add words</div>

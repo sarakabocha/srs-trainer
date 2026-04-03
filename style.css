@@ -40,7 +40,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #1a1a18;
     --bg-secondary: #222220;
     --bg-tertiary: #141412;
@@ -62,6 +62,28 @@
     --shadow-card: 0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.15);
     --shadow-card-hover: 0 2px 8px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2);
   }
+}
+:root[data-theme="dark"] {
+  --bg: #1a1a18;
+  --bg-secondary: #222220;
+  --bg-tertiary: #141412;
+  --text: #f0efe8;
+  --text-secondary: #9a9a92;
+  --border: rgba(255,255,255,0.05);
+  --border-hover: rgba(255,255,255,0.11);
+  --teal: #2BB88A;
+  --teal-light: rgba(10,46,36,0.5);
+  --teal-dark: #9FE1CB;
+  --teal-glow: rgba(43,184,138,0.12);
+  --amber-light: #2a2010;
+  --amber-glow: rgba(239,159,39,0.15);
+  --blue-light: #042C53;
+  --blue-dark: #B5D4F4;
+  --amber-dark: #3a2800;
+  --red-light: rgba(80,19,19,0.5);
+  --red-dark: #F7C1C1;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.15);
+  --shadow-card-hover: 0 2px 8px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2);
 }
 
 /* — Layout — */
@@ -419,15 +441,44 @@ textarea { resize: none; min-height: 72px; }
   font-size: var(--fs-body-sm);
 }
 
+/* — Theme Toggle — */
+
+.btn-theme-toggle {
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.btn-theme-toggle:hover {
+  background: var(--bg-secondary);
+  color: var(--text);
+}
+.btn-theme-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
 /* — Close Session Button — */
 
-.btn-close-session {
+.sess-header-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-close-session {
   background: none;
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  padding: 4px;
+  padding: 6px;
   border-radius: 6px;
   display: flex;
   align-items: center;
@@ -720,7 +771,7 @@ textarea { resize: none; min-height: 72px; }
 
 /* — API Key & Menu — */
 
-.menu-wrap { margin-left: auto; position: relative; }
+.menu-wrap { margin-left: auto; position: relative; display: flex; align-items: center; gap: 4px; }
 .btn-menu { padding: 6px 10px; font-size: 18px; line-height: 1; }
 .dropdown {
   position: absolute; right: 0; top: calc(100% + 6px);

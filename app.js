@@ -35,6 +35,33 @@ const CONTEXTS=[
 const INTERVALS={good:[1,3,7,14,30],ok:[1,2,4,10],hard:[0,0,1,2]};
 const SESSION_SIZES=[5,10,15,0];
 
+// — Theme Toggle —
+
+const SVG_SUN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+const SVG_MOON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+const SVG_MONITOR='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>';
+
+function getThemePref(){return localStorage.getItem('theme-pref')||'system';}
+
+function applyTheme(pref){
+  document.documentElement.removeAttribute('data-theme');
+  if(pref==='light') document.documentElement.setAttribute('data-theme','light');
+  else if(pref==='dark') document.documentElement.setAttribute('data-theme','dark');
+  // update all toggle buttons
+  const icon=pref==='light'?SVG_SUN:pref==='dark'?SVG_MOON:SVG_MONITOR;
+  document.querySelectorAll('.btn-theme-toggle').forEach(b=>{b.innerHTML=icon;});
+}
+
+function cycleTheme(){
+  const order=['system','light','dark'];
+  const cur=getThemePref();
+  const next=order[(order.indexOf(cur)+1)%order.length];
+  localStorage.setItem('theme-pref',next);
+  applyTheme(next);
+}
+
+applyTheme(getThemePref());
+
 // — SVG Icons —
 
 const SVG_CHEVRON_RIGHT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';

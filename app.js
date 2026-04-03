@@ -64,7 +64,8 @@ function todayStr(){return new Date().toISOString().slice(0,10);}
 
 function isDue(w){if(!w.nextReview)return true;return w.nextReview<=todayStr();}
 function nextInterval(w,rating){const lvl=Math.max(0,Math.min((w.level||0),4));const arr=INTERVALS[rating]||INTERVALS.ok;const days=arr[Math.min(lvl,arr.length-1)];const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10);}
-function updateStreak(db){const today=todayStr();if(db.lastDate===today)return;const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yd=yesterday.toISOString().slice(0,10);if(db.lastDate===yd)db.streak=(db.streak||0)+1;else if(db.lastDate!==today)db.streak=1;db.lastDate=today;}
+function updateStreak(db){const today=todayStr();if(db.lastDate===today){db.lastTimestamp=Date.now();return;}const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);const yd=yesterday.toISOString().slice(0,10);if(db.lastDate===yd)db.streak=(db.streak||0)+1;else if(db.lastDate!==today)db.streak=1;db.lastDate=today;db.lastTimestamp=Date.now();}
+function formatLastSession(db){if(!db.lastTimestamp&&!db.lastDate)return'';const ts=db.lastTimestamp||new Date(db.lastDate+'T12:00:00').getTime();const now=Date.now();const diffMs=now-ts;const diffH=Math.floor(diffMs/3600000);const diffD=Math.floor(diffMs/86400000);if(diffH<1)return'last: just now';if(diffH<24)return'last: '+diffH+'h ago';if(diffD<7)return'last: '+diffD+'d ago';const d=new Date(ts);const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];if(diffD>=365)return'last: '+months[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();return'last: '+months[d.getMonth()]+' '+d.getDate();}
 
 
 function normalize(s){return s.replace(/\s+/g,'').replace(/[.,!?~]/g,'').toLowerCase();}
@@ -176,7 +177,7 @@ function loadHome(){
   document.getElementById('s-hard').textContent=hard.length;
   document.getElementById('s-sessions').textContent=db.sessions||0;
   document.getElementById('streak-num').textContent=db.streak||0;
-  document.getElementById('last-session-label').textContent=db.lastDate?'last: '+db.lastDate:'';
+  document.getElementById('last-session-label').textContent=formatLastSession(db);
   const filteredDue=activeThemeFilter?due.filter(w=>w.theme===activeThemeFilter):due;
   document.getElementById('due-summary').textContent=filteredDue.length===0
     ?activeThemeFilter?`No words due in "${activeThemeFilter}" — try another theme or check back tomorrow.`:'No words due — check back tomorrow, or add new words below.'

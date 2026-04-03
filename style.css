@@ -506,7 +506,7 @@ textarea { resize: none; min-height: 72px; }
   margin-bottom: 1rem;
 }
 .streak-flame {
-  width: 36px; height: 36px;
+  width: 32px; height: 32px;
   background: var(--amber);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;

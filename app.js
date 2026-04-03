@@ -557,7 +557,7 @@ function renderSessionPhase(){
       stackLayers +
       `<div class="card see-card">` +
       `<div class="session-body session-body-center">` +
-      `<div class="prompt-text mb-sm">which does NOT pair with</div>` +
+      `<div class="prompt-text mt-md mb-sm">which does NOT pair with</div>` +
       `<div class="flashcard-word">${esc(w.ko)}</div>` +
       `<div id="pair-options">${optBtns}</div>` +
       `<div id="pair-result" class="pair-result"></div>` +

@@ -104,6 +104,7 @@ let sessRecallResults=[];
 let sessPairResults=[];
 let sessCollocations={};
 let sessUseSentences=[];
+let sayUsedTextInput=false;
 let dbSnapshot=null;
 let phaseMap=['see','say','use'];
 let activeRecognition=null;
@@ -399,7 +400,7 @@ async function startSession(){
   const normal=filtered.filter(w=>(w.hardCount||0)===0).sort(()=>Math.random()-0.5);
   const limit=sessionSize===0?Infinity:sessionSize;
   sessionQueue=[...hard,...normal].slice(0,limit);
-  sessIdx=0;sessPhase=0;sessRatings=[];sessionContexts=[];sessRecallResults=[];sessPairResults=[];sessCollocations={};sessUseSentences=[];
+  sessIdx=0;sessPhase=0;sessRatings=[];sessionContexts=[];sessRecallResults=[];sessPairResults=[];sessCollocations={};sessUseSentences=[];sayUsedTextInput=false;
   dbSnapshot=JSON.stringify(db);
   showScreen('session');
   const endBtn=document.getElementById('end-early-btn');
@@ -517,7 +518,7 @@ function renderSessionPhase(){
       `<div class="session-body session-body-center">` +
       `<div class="flashcard-word">${esc(w.en)}</div>` +
       `${hasSpeech ? `<button class="btn-circle" id="btn-circle" onclick="startVoice(${escJS(w.ko)})">${MIC_ICON}</button>` : ''}` +
-      `<div class="type-input-wrap"><input class="type-input" id="type-ans" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>` +
+      `<div class="type-input-wrap"><input class="type-input" id="type-ans" lang="ko" placeholder="한국어" autocomplete="off" autocorrect="off" spellcheck="false" /></div>` +
       `<div id="type-result" class="type-result"></div>` +
       `<div id="voice-status" class="hidden"></div>` +
       `</div></div></div>` +
@@ -533,6 +534,7 @@ function renderSessionPhase(){
         ti.addEventListener('blur',function(){
           if(ti.value.trim()&&!ti.disabled) setTimeout(()=>checkTypedAnswer(w.ko),100);
         });
+        if(sayUsedTextInput) ti.focus();
       }
     },50);
   } else if(phase==='pair'){
@@ -580,7 +582,7 @@ function renderSessionPhase(){
       `<div class="card see-card use-card">` +
       `<div class="session-body">` +
       `<div class="prompt-text prompt-context">${esc(ctx)}</div>` +
-      `<textarea id="use-ans" placeholder="Write in Korean..."></textarea>` +
+      `<textarea id="use-ans" lang="ko" placeholder="Write in Korean..."></textarea>` +
       `${hasKey?`<button class="btn-full mt-sm mb-sm" onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:''}` +
       `<div id="use-ai-feedback"></div>` +
       `</div></div></div>` +
@@ -1304,6 +1306,7 @@ function checkTypedAnswer(expectedKo){
   if(!input||!result) return;
   const val=input.value.trim();
   if(!val) return;
+  sayUsedTextInput=true;
   if(status) status.textContent='';
   const correct=normalize(val)===normalize(expectedKo);
   if(correct){

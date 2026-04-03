@@ -3,34 +3,32 @@
 const isMobile=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
 const CONTEXTS=[
-  // Conversational — reply to someone
-  (ko,en)=>`Your friend says: "요즘 뭐 하고 있어?" Reply using "${ko}" (${en}).`,
-  (ko,en)=>`A coworker asks: "주말에 뭐 했어요?" Answer using "${ko}" (${en}).`,
-  (ko,en)=>`Your friend texts: "나 고민이 있어..." Give advice using "${ko}" (${en}).`,
-  (ko,en)=>`Someone asks: "그거 어땠어?" Describe your experience using "${ko}" (${en}).`,
-  (ko,en)=>`A friend says: "한국어 왜 배워?" Explain using "${ko}" (${en}).`,
-  (ko,en)=>`Your friend asks: "요즘 무슨 드라마 봐?" Reply and work in "${ko}" (${en}).`,
-  (ko,en)=>`Someone asks: "그 사람 어때?" Describe them using "${ko}" (${en}).`,
-  (ko,en)=>`A friend complains: "너무 힘들어..." Respond using "${ko}" (${en}).`,
-  (ko,en)=>`Your friend says: "이거 해 본 적 있어?" Answer using "${ko}" (${en}).`,
-  (ko,en)=>`Someone asks: "왜 그렇게 생각해?" Explain your reasoning using "${ko}" (${en}).`,
-  // Personal — about your life
-  (ko,en)=>`Describe something that happened to you this week using "${ko}" (${en}).`,
-  (ko,en)=>`Write a text to a friend about your plans for tomorrow. Use "${ko}" (${en}).`,
-  (ko,en)=>`Describe a habit of yours — good or bad — using "${ko}" (${en}).`,
-  (ko,en)=>`Something surprised you recently. Describe it using "${ko}" (${en}).`,
-  (ko,en)=>`Write about a place you like going to. Use "${ko}" (${en}).`,
-  // Situational — specific scenarios
-  (ko,en)=>`You're ordering at a restaurant and explaining what you want. Use "${ko}" (${en}).`,
-  (ko,en)=>`You're leaving a review for something you bought. Use "${ko}" (${en}).`,
-  (ko,en)=>`You're explaining why you were late. Use "${ko}" (${en}).`,
-  (ko,en)=>`You're recommending something to a friend. Use "${ko}" (${en}).`,
-  (ko,en)=>`You're apologizing to someone. Use "${ko}" (${en}) in your apology.`,
+  // Conversational — friend texts you
+  (ko,en)=>({bubble:'요즘 뭐 하고 있어?',prompt:`Your friend says: "요즘 뭐 하고 있어?" Reply using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'주말에 뭐 했어요?',prompt:`A coworker asks: "주말에 뭐 했어요?" Answer using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'나 고민이 있어...',prompt:`Your friend texts: "나 고민이 있어..." Give advice using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'그거 어땠어?',prompt:`Someone asks: "그거 어땠어?" Describe your experience using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'한국어 왜 배워?',prompt:`A friend says: "한국어 왜 배워?" Explain using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'요즘 무슨 드라마 봐?',prompt:`Your friend asks: "요즘 무슨 드라마 봐?" Reply and work in "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'그 사람 어때?',prompt:`Someone asks: "그 사람 어때?" Describe them using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'너무 힘들어...',prompt:`A friend complains: "너무 힘들어..." Respond using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'이거 해 본 적 있어?',prompt:`Your friend says: "이거 해 본 적 있어?" Answer using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'왜 그렇게 생각해?',prompt:`Someone asks: "왜 그렇게 생각해?" Explain your reasoning using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'이번 주에 뭐 있었어?',prompt:`A friend asks: "이번 주에 뭐 있었어?" Describe something that happened using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'내일 뭐 할 거야?',prompt:`Your friend texts: "내일 뭐 할 거야?" Reply about your plans using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'습관 같은 거 있어?',prompt:`A friend asks: "습관 같은 거 있어?" Describe a habit using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'요즘 놀란 적 있어?',prompt:`Someone texts: "요즘 놀란 적 있어?" Describe a surprise using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'좋아하는 장소 있어?',prompt:`A friend asks: "좋아하는 장소 있어?" Write about a place using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'뭐 먹을 거야?',prompt:`A friend at a restaurant asks: "뭐 먹을 거야?" Explain what you want using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'그거 사 봤어? 어때?',prompt:`Someone asks about a purchase: "그거 사 봤어? 어때?" Leave a review using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'왜 이렇게 늦었어?',prompt:`A friend says: "왜 이렇게 늦었어?" Explain why you were late using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'뭐 추천해 줄 수 있어?',prompt:`A friend asks: "뭐 추천해 줄 수 있어?" Recommend something using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'나한테 할 말 없어?',prompt:`A friend says: "나한테 할 말 없어?" Apologize using "${ko}" (${en}).`}),
   // Sentence starters
-  (ko,en)=>`Finish this in Korean using "${ko}" (${en}):\n"솔직히 말하면..." (honestly speaking...)`,
-  (ko,en)=>`Finish this in Korean using "${ko}" (${en}):\n"그때 알았어..." (that's when I realized...)`,
-  (ko,en)=>`Finish this in Korean using "${ko}" (${en}):\n"처음에는 몰랐는데..." (at first I didn't know, but...)`,
-  (ko,en)=>`Finish this in Korean using "${ko}" (${en}):\n"만약에..." (if...)`,
+  (ko,en)=>({bubble:'솔직히 말해 봐...',prompt:`Finish this in Korean using "${ko}" (${en}): "솔직히 말하면..." (honestly speaking...)`}),
+  (ko,en)=>({bubble:'그때 무슨 일이 있었어?',prompt:`Finish this in Korean using "${ko}" (${en}): "그때 알았어..." (that's when I realized...)`}),
+  (ko,en)=>({bubble:'처음부터 알았어?',prompt:`Finish this in Korean using "${ko}" (${en}): "처음에는 몰랐는데..." (at first I didn't know, but...)`}),
+  (ko,en)=>({bubble:'만약에 말이야...',prompt:`Finish this in Korean using "${ko}" (${en}): "만약에..." (if...)`}),
 ];
 const INTERVALS={good:[1,3,7,14,30],ok:[1,2,4,10],hard:[0,0,1,2]};
 const SESSION_SIZES=[5,10,15,0];
@@ -597,27 +595,33 @@ function renderSessionPhase(){
       `</div>`;
   } else if(phase==='use'){
     const remaining = sessionQueue.length - sessIdx - 1;
-    const ctx = sessionContexts[sessIdx] || (sessionContexts[sessIdx] = CONTEXTS[Math.floor(Math.random() * CONTEXTS.length)](w.ko, w.en));
+    const ctxObj = sessionContexts[sessIdx] || (sessionContexts[sessIdx] = CONTEXTS[Math.floor(Math.random() * CONTEXTS.length)](w.ko, w.en));
     const hasKey = !!getApiKey();
-    const stackLayers = remaining > 0
-      ? `<div class="card-stack-layer card-stack-1"></div>` +
-        (remaining > 1 ? `<div class="card-stack-layer card-stack-2"></div>` : '')
-      : '';
     el.innerHTML =
       `<div class="see-remaining label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
-      `<div class="card-stack-wrap">` +
-      stackLayers +
-      `<div class="card see-card use-card">` +
-      `<div class="session-body">` +
-      `<div class="prompt-text prompt-context">${esc(ctx)}</div>` +
-      `<textarea id="use-ans" lang="ko" placeholder="Write in Korean..."></textarea>` +
-      `${hasKey?`<button class="btn-full mt-sm mb-sm" onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">evaluate${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:''}` +
+      `<div class="card use-card">` +
+      `<div class="session-body use-chat">` +
+      `<div class="chat-bubble chat-incoming">${esc(ctxObj.bubble)}</div>` +
+      `<div id="use-reply-area" style="justify-items: flex-end;"></div>` +
+      `<div class="chat-target">"${esc(w.ko)}"</div>` +
+      `<div class="use-input-area">` +
+      `<input type="text" id="use-ans" lang="ko" placeholder="답장..." autocomplete="off" autocorrect="off" />` +
+      `${hasKey?`<button class="btn-full" onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">reply${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:''}` +
+      `</div>` +
+      `</div></div>` +
       `<div id="use-ai-feedback"></div>` +
-      `</div></div></div>` +
       `<div id="use-action" class="see-action" style="text-align:right">` +
       `<button id="use-skip" onclick="skipUse()">skip ${SVG_ARROW_RIGHT}</button>` +
       `</div>`;
-    setTimeout(() => document.getElementById('use-ans')?.focus(), 50);
+    setTimeout(() => {
+      const inp=document.getElementById('use-ans');
+      if(inp){
+        inp.focus();
+        inp.addEventListener('keydown',function(e){
+          if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();getAiFeedback('use',w.ko,w.en);}
+        });
+      }
+    }, 50);
   }
 }
 
@@ -1156,9 +1160,16 @@ async function getAiFeedback(phase,ko,en){
   const outId='use-ai-feedback';
   const answer=document.getElementById(ansId)?.value?.trim();
   if(!answer){document.getElementById(outId).innerHTML=`<div class="ai-loading">Write something first.</div>`;return;}
-  document.getElementById(outId).innerHTML=`<div class="ai-loading">evaluating...</div>`;
-  const ctx=sessionContexts[sessIdx]||'';
-  const prompt=`You are a Korean language tutor for an upper-intermediate learner. The target word is "${ko}" (${en}).\n\nThe learner was given this prompt:\n"${ctx}"\n\nThe learner wrote:\n"${answer}"\n\nEvaluate in 3 parts, be concise:\n1. SCORE: one of — great / good / needs work\n2. FEEDBACK: 1-2 sentences on grammar, naturalness, or word usage. Did they respond appropriately to the prompt? Be specific.\n3. SUGGESTION: If score is not "great", rewrite the sentence more naturally. The suggestion MUST use the target word "${ko}". (Korean only, then translation in parentheses). If great, skip this.\n\nReply in this exact format:\nSCORE: [great/good/needs work]\nFEEDBACK: [your feedback]\nSUGGESTION: [improved sentence using ${ko} (translation)] or none`;
+  // Show user's reply as a chat bubble
+  const replyArea=document.getElementById('use-reply-area');
+  if(replyArea&&!replyArea.querySelector('.chat-outgoing')){
+    replyArea.innerHTML=`<div class="chat-bubble chat-outgoing" id="user-reply-bubble">${esc(answer)}</div>`;
+  }
+  replyArea.insertAdjacentHTML('afterend',`<div class="chat-bubble chat-incoming chat-typing" id="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`);
+  document.getElementById(outId).innerHTML='';
+  const ctxObj=sessionContexts[sessIdx]||{prompt:''};
+  const ctxPrompt=typeof ctxObj==='string'?ctxObj:(ctxObj.prompt||'');
+  const prompt=`You are a Korean language tutor for an upper-intermediate learner. The target word is "${ko}" (${en}).\n\nThe learner was given this prompt:\n"${ctxPrompt}"\n\nThe learner wrote:\n"${answer}"\n\nEvaluate in 3 parts, be concise:\n1. SCORE: one of — great / good / needs work\n2. FEEDBACK: 1-2 sentences on grammar, naturalness, or word usage. Did they respond appropriately to the prompt? Be specific.\n3. SUGGESTION: If score is not "great", rewrite the sentence more naturally. The suggestion MUST use the target word "${ko}". (Korean only, then translation in parentheses). If great, skip this.\n\nReply in this exact format:\nSCORE: [great/good/needs work]\nFEEDBACK: [your feedback]\nSUGGESTION: [improved sentence using ${ko} (translation)] or none`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -1166,7 +1177,7 @@ async function getAiFeedback(phase,ko,en){
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:300,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
-    if(data.error){document.getElementById(outId).innerHTML=`<div class="ai-loading">Error: ${data.error.message}</div>`;return;}
+    if(data.error){const t=document.getElementById('typing-indicator');if(t)t.remove();document.getElementById(outId).innerHTML=`<div class="ai-loading">Error: ${data.error.message}</div>`;return;}
     const text=data.content?.[0]?.text||'';
     const scoreM=text.match(/SCORE:\s*(.+)/i);
     const feedM=text.match(/FEEDBACK:\s*(.+)/i);
@@ -1176,6 +1187,26 @@ async function getAiFeedback(phase,ko,en){
     const sugg=(suggM?.[1]||'').trim();
     const scoreClass=score.includes('great')?'score-great':score.includes('needs')?'score-revise':'score-ok';
     const scoreLabel=score.includes('great')?'great':score.includes('needs')?'needs work':'good';
+    // Remove typing indicator
+    const typing=document.getElementById('typing-indicator');
+    if(typing) typing.remove();
+    // Add reaction to user's reply bubble
+    const replyBubble=document.getElementById('user-reply-bubble');
+    if(replyBubble){
+      const reaction=scoreLabel==='needs work'?'👎':scoreLabel==='great'?'👍':'';
+      if(reaction) replyBubble.insertAdjacentHTML('afterbegin',`<span class="chat-reaction">${reaction}</span>`);
+    }
+    // Show suggestion as a corrected reply bubble
+    const replyArea=document.getElementById('use-reply-area');
+    if(sugg&&sugg.toLowerCase()!=='none'&&replyArea){
+      const m=sugg.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+      const suggKo=m?m[1]:sugg;
+      const suggEn=m?m[2]:'';
+      replyArea.insertAdjacentHTML('beforeend',
+        `<div class="chat-bubble chat-outgoing chat-suggestion">` +
+        `${esc(suggKo)}` +
+        `</div>`);
+    }
     let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div>${esc(feed)}</div></div>`;
     if(sugg&&sugg.toLowerCase()!=='none'){
       const m=sugg.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
@@ -1196,6 +1227,7 @@ async function getAiFeedback(phase,ko,en){
     const skipBtn=document.getElementById('use-skip');
     if(skipBtn) skipBtn.innerHTML='next '+SVG_ARROW_RIGHT;
   }catch(e){
+    const t=document.getElementById('typing-indicator');if(t)t.remove();
     document.getElementById(outId).innerHTML=`<div class="ai-loading">Could not reach API. Check your key and connection.</div>`;
   }
 }

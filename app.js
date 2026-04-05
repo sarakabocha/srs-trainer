@@ -98,9 +98,28 @@ function normalize(s){return s.replace(/\s+/g,'').replace(/[.,!?~]/g,'').toLower
 // — Sound Effects —
 
 let _audioCtx=null;
-function getAudioCtx(){if(!_audioCtx) _audioCtx=new (window.AudioContext||window.webkitAudioContext)();return _audioCtx;}
+let _iosAudioUnlocked=false;
+function getAudioCtx(){
+  if(!_audioCtx) _audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(_audioCtx.state==='suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+// iOS routes Web Audio as a system sound (ignoring volume buttons) unless
+// an HTML5 <audio> element has played in the same user-gesture first.
+// Playing a tiny silent buffer once "unlocks" the media audio session.
+function unlockIOSAudio(){
+  if(_iosAudioUnlocked) return;
+  try{
+    const s=new Audio();
+    s.src='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRBqpAAAAAAD/+1DEAAAFeAFX9AAAB1wirv80YAAERAAAH/f/5cMQBAAIcwt/+JhUAZkQM///5sIIA/Af///5YMbEQQAD///9xjYiBgYAAAA9yGCAIAhw//LA4AYME///ywOsRBAAP///8sGNiIIAB///+4xsRAEAQ9yGCAIYn//4HGIA/ygYgD/LA6xEEAA////8sDrEQQAD///+WB1iIIAB////uMbEQBA//tQxBaAAADSAAAAAAAAANIAAAAASf/6yIIAiAf///5hBsRBAAP///8sDrEQQAD////cY2IgiAIeAA/Af///lAxsRBAAP///ywY2IggAH///+4xsRAEAQ///8sDrEQQAD///+WB1iIIAB///+4xsRBAAP///ywOsRBAAP///8sGNiIIAB////cY2IgCAIe5DEAQBEH//8sDuEQQAD///+WDGxEEAA////uMbEQBAEP///ywOsRBAAP///8sDrEQQAD///+4xg==';
+    s.volume=0.01;
+    s.play().then(()=>{s.pause();}).catch(()=>{});
+  }catch(e){}
+  _iosAudioUnlocked=true;
+}
 function playCorrectSound(){
   try{
+    unlockIOSAudio();
     const ctx=getAudioCtx();
     const now=ctx.currentTime;
     const gain=ctx.createGain();

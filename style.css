@@ -840,10 +840,24 @@ textarea { resize: none; min-height: 72px; }
   margin-top: auto;
   padding-top: 0.5rem;
 }
+.use-input-wrap {
+  position: relative;
+  width: 100%;
+}
+.use-clear-btn {
+  position: absolute;
+  right: 10px;
+  bottom: 13px;
+  padding: 4px;
+}
+.use-clear-btn svg {
+  width: 16px;
+  height: 16px;
+}
 .use-input-area textarea {
   width: 100%;
   font-size: var(--fs-body);
-  padding: 10px 14px;
+  padding: 10px 38px 10px 14px;
   border: 0.5px solid var(--border-hover);
   border-radius: 20px;
   background: var(--bg);

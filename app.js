@@ -624,7 +624,10 @@ function renderSessionPhase(){
       `<div id="use-reply-area" style="justify-items: flex-end;"></div>` +
       `<div class="chat-target">"${esc(w.ko)}"</div>` +
       `<div class="use-input-area">` +
+      `<div class="use-input-wrap">` +
       `<textarea id="use-ans" lang="ko" placeholder="답장..." autocomplete="off" autocorrect="off" rows="1"></textarea>` +
+      `<button class="btn-close-session use-clear-btn" id="use-clear" onclick="document.getElementById('use-ans').value='';document.getElementById('use-ans').style.height='auto';this.hidden=true;document.getElementById('use-ans').focus();" hidden>${SVG_X_CLOSE}</button>` +
+      `</div>` +
       `${hasKey?`<button class="btn-full" onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">reply${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:''}` +
       `</div>` +
       `</div></div>` +
@@ -642,6 +645,8 @@ function renderSessionPhase(){
         inp.addEventListener('input',function(){
           this.style.height='auto';
           this.style.height=this.scrollHeight+'px';
+          const clr=document.getElementById('use-clear');
+          if(clr) clr.hidden=!this.value.trim();
         });
       }
     }, 50);

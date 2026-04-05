@@ -767,7 +767,7 @@ textarea { resize: none; min-height: 72px; }
 .chat-bubble {
   padding: 10px 14px;
   border-radius: 16px;
-  font-size: var(--fs-body);
+  font-size: var(--fs-body-lg);
   line-height: 1.5;
   max-width: 80%;
   animation: fadeUp 0.25s ease-out both;
@@ -795,7 +795,7 @@ textarea { resize: none; min-height: 72px; }
 .chat-typing {
   display: flex;
   gap: 4px;
-  padding: 10px 16px;
+  padding: 16px 16px;
   min-height: 0;
 }
 .typing-dot {
@@ -856,7 +856,7 @@ textarea { resize: none; min-height: 72px; }
 }
 .use-input-area textarea {
   width: 100%;
-  font-size: var(--fs-body);
+  font-size: var(--fs-body-lg);
   padding: 10px 38px 10px 14px;
   border: 0.5px solid var(--border-hover);
   border-radius: 20px;

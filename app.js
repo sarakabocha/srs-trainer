@@ -1130,7 +1130,9 @@ async function generateStory(){
     return;
   }
   out.innerHTML=`<div class="ai-loading">concocting something ridiculous...</div>`;
-  const wordList=sessUseSentences.map(s=>`- "${s.sentence}" (used word: ${s.ko}, ${s.en})`).join('\n');
+  const usable=sessUseSentences.filter(s=>s.score!=='needs work');
+  if(usable.length===0){document.getElementById('story-card').classList.add('hidden');return;}
+  const wordList=usable.map(s=>`- "${s.sentence}" (used word: ${s.ko}, ${s.en})`).join('\n');
   const prompt=`You are a Korean creative writing assistant with a talent for absurd, deadpan comedy. A learner wrote these sentences during vocabulary practice:\n\n${wordList}\n\nWeave them into a short funny/absurd story in Korean (4-8 sentences). The tone should be comedic — unexpected situations, dry humor, surreal logic, bizarre consequences. Rules:\n1. Include each of the learner's sentences naturally — you may lightly adjust grammar but keep their words\n2. Bold each target vocabulary word using **word** markdown\n3. Commit fully to the absurdity — the funnier the better\n4. After the Korean story, add a natural English translation starting with "---"\n\nFormat:\n[Korean story]\n---\n[English translation]`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{

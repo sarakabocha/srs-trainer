@@ -1256,6 +1256,11 @@ async function getAiFeedback(phase,ko,en){
       if(w&&!sessionQueue.slice(sessIdx+1).find(q=>q.ko===ko)){
         sessionQueue.push(w);
       }
+    } else {
+      // Good/great reattempt: remove any future duplicate queued from a prior "needs work"
+      for(let i=sessionQueue.length-1;i>sessIdx;i--){
+        if(sessionQueue[i].ko===ko){sessionQueue.splice(i,1);break;}
+      }
     }
     const skipBtn=document.getElementById('use-skip');
     if(skipBtn) skipBtn.innerHTML='next '+SVG_ARROW_RIGHT;

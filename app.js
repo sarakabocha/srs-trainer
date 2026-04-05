@@ -624,7 +624,7 @@ function renderSessionPhase(){
       `<div id="use-reply-area" style="justify-items: flex-end;"></div>` +
       `<div class="chat-target">"${esc(w.ko)}"</div>` +
       `<div class="use-input-area">` +
-      `<input type="text" id="use-ans" lang="ko" placeholder="답장..." autocomplete="off" autocorrect="off" />` +
+      `<textarea id="use-ans" lang="ko" placeholder="답장..." autocomplete="off" autocorrect="off" rows="1"></textarea>` +
       `${hasKey?`<button class="btn-full" onclick="getAiFeedback('use',${escJS(w.ko)},${escJS(w.en)})">reply${isMobile?'':' <kbd>⌘↵</kbd>'}</button>`:''}` +
       `</div>` +
       `</div></div>` +
@@ -638,6 +638,10 @@ function renderSessionPhase(){
         inp.focus();
         inp.addEventListener('keydown',function(e){
           if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();getAiFeedback('use',w.ko,w.en);}
+        });
+        inp.addEventListener('input',function(){
+          this.style.height='auto';
+          this.style.height=this.scrollHeight+'px';
         });
       }
     }, 50);

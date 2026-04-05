@@ -840,7 +840,7 @@ textarea { resize: none; min-height: 72px; }
   margin-top: auto;
   padding-top: 0.5rem;
 }
-.use-input-area input {
+.use-input-area textarea {
   width: 100%;
   font-size: var(--fs-body);
   padding: 10px 14px;
@@ -850,11 +850,17 @@ textarea { resize: none; min-height: 72px; }
   color: var(--text);
   font-family: var(--font-ui);
   outline: none;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.4;
+  box-sizing: border-box;
+  field-sizing: content;
+  min-height: 42px;
 }
-.use-input-area input:focus {
+.use-input-area textarea:focus {
   border-color: var(--teal);
 }
-.use-input-area input::placeholder {
+.use-input-area textarea::placeholder {
   color: var(--text-secondary);
 }
 .use-card {

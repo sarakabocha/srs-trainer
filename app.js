@@ -1164,8 +1164,11 @@ async function getAiFeedback(phase,ko,en){
   if(!answer){document.getElementById(outId).innerHTML=`<div class="ai-loading">Write something first.</div>`;return;}
   // Show user's reply as a chat bubble
   const replyArea=document.getElementById('use-reply-area');
-  if(replyArea&&!replyArea.querySelector('.chat-outgoing')){
-    replyArea.innerHTML=`<div class="chat-bubble chat-outgoing" id="user-reply-bubble">${esc(answer)}</div>`;
+  if(replyArea){
+    replyArea.querySelectorAll('.chat-suggestion').forEach(el=>el.remove());
+    const prev=replyArea.querySelector('.user-reply-latest');
+    if(prev) prev.classList.remove('user-reply-latest');
+    replyArea.insertAdjacentHTML('beforeend',`<div class="chat-bubble chat-outgoing user-reply-latest">${esc(answer)}</div>`);
   }
   replyArea.insertAdjacentHTML('afterend',`<div class="chat-bubble chat-incoming chat-typing" id="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`);
   document.getElementById(outId).innerHTML='';
@@ -1193,7 +1196,7 @@ async function getAiFeedback(phase,ko,en){
     const typing=document.getElementById('typing-indicator');
     if(typing) typing.remove();
     // Add reaction to user's reply bubble
-    const replyBubble=document.getElementById('user-reply-bubble');
+    const replyBubble=replyArea?.querySelector('.user-reply-latest');
     if(replyBubble){
       const reaction=scoreLabel==='needs work'?'👎':scoreLabel==='great'?'👍':'';
       if(reaction) replyBubble.insertAdjacentHTML('afterbegin',`<span class="chat-reaction">${reaction}</span>`);

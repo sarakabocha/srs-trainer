@@ -412,12 +412,12 @@ async function startSession(){
   if(roundChoice!=='all'){
     const needsCollocations=roundChoice==='pair';
     if(needsCollocations&&getApiKey()){
-      document.getElementById('phase-content').innerHTML=`<div class="card session-loading"><div class="ai-loading">preparing session...</div></div>`;
+      document.getElementById('phase-content').innerHTML=`<div class="session-loading"><div class="ai-loading">preparing session...</div></div>`;
       await loadCollocations(sessionQueue);
     }
     phaseMap=[roundChoice];
   } else if(getApiKey()){
-    document.getElementById('phase-content').innerHTML=`<div class="card session-loading"><div class="ai-loading">preparing session...</div></div>`;
+    document.getElementById('phase-content').innerHTML=`<div class="session-loading"><div class="ai-loading">preparing session...</div></div>`;
     const ok=await loadCollocations(sessionQueue);
     phaseMap=ok?['see','say','pair','use']:['see','say','use'];
   } else {

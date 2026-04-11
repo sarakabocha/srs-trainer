@@ -95,48 +95,7 @@ function formatLastSession(db){if(!db.lastTimestamp&&!db.lastDate)return'';const
 
 function normalize(s){return s.replace(/\s+/g,'').replace(/[.,!?~]/g,'').toLowerCase();}
 
-// — Sound Effects —
-
-let _audioCtx=null;
-let _iosAudioUnlocked=false;
-function getAudioCtx(){
-  if(!_audioCtx) _audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-  if(_audioCtx.state==='suspended') _audioCtx.resume();
-  return _audioCtx;
-}
-// iOS routes Web Audio as a system sound (ignoring volume buttons) unless
-// an HTML5 <audio> element has played in the same user-gesture first.
-// Playing a tiny silent buffer once "unlocks" the media audio session.
-function unlockIOSAudio(){
-  if(_iosAudioUnlocked) return;
-  try{
-    const s=new Audio();
-    s.src='data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAABhgC7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7u7//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAAYYoRBqpAAAAAAD/+1DEAAAFeAFX9AAAB1wirv80YAAERAAAH/f/5cMQBAAIcwt/+JhUAZkQM///5sIIA/Af///5YMbEQQAD///9xjYiBgYAAAA9yGCAIAhw//LA4AYME///ywOsRBAAP///8sGNiIIAB///+4xsRAEAQ9yGCAIYn//4HGIA/ygYgD/LA6xEEAA////8sDrEQQAD///+WB1iIIAB////uMbEQBA//tQxBaAAADSAAAAAAAAANIAAAAASf/6yIIAiAf///5hBsRBAAP///8sDrEQQAD////cY2IgiAIeAA/Af///lAxsRBAAP///ywY2IggAH///+4xsRAEAQ///8sDrEQQAD///+WB1iIIAB///+4xsRBAAP///ywOsRBAAP///8sGNiIIAB////cY2IgCAIe5DEAQBEH//8sDuEQQAD///+WDGxEEAA////uMbEQBAEP///ywOsRBAAP///8sDrEQQAD///+4xg==';
-    s.volume=0.01;
-    s.play().then(()=>{s.pause();}).catch(()=>{});
-  }catch(e){}
-  _iosAudioUnlocked=true;
-}
-function playCorrectSound(){
-  try{
-    unlockIOSAudio();
-    const ctx=getAudioCtx();
-    const now=ctx.currentTime;
-    const gain=ctx.createGain();
-    gain.connect(ctx.destination);
-    gain.gain.setValueAtTime(0.18,now);
-    gain.gain.setValueAtTime(0.18,now+0.2);
-    gain.gain.linearRampToValueAtTime(0,now+0.5);
-    [783.99, 1046.50].forEach((freq,i)=>{
-      const osc=ctx.createOscillator();
-      osc.type='sine';
-      osc.frequency.value=freq;
-      osc.connect(gain);
-      osc.start(now+i*0.08);
-      osc.stop(now+0.5);
-    });
-  }catch(e){}
-}
+// — Utilities —
 function shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 // — State —
@@ -861,7 +820,6 @@ function selectCollocation(ko,chosenKo){
   });
   const resultEl=document.getElementById('pair-result');
   if(gotIt){
-    playCorrectSound();
     resultEl.innerHTML=`<div class="pair-feedback correct">correct ${SVG_CHECK}</div>`;
   } else {
     resultEl.innerHTML=`<div class="pair-feedback wrong">the odd one out was ${esc(coll.wrong.ko)} (${esc(coll.wrong.en)})</div>`;
@@ -1367,8 +1325,7 @@ function startVoice(expectedKo){
     if(micBtn){micBtn.className='btn-circle';micBtn.innerHTML=MIC_ICON;}
     if(input){input.value=heard;input.disabled=true;}
     if(correct){
-      playCorrectSound();
-      if(input) input.style.color='var(--teal)';
+        if(input) input.style.color='var(--teal)';
       if(status) status.textContent='';
       showSayNext();
     } else {
@@ -1418,7 +1375,6 @@ function checkTypedAnswer(expectedKo){
   if(status) status.textContent='';
   const correct=normalize(val)===normalize(expectedKo);
   if(correct){
-    playCorrectSound();
     input.disabled=true;
     input.style.color='var(--teal)';
     showSayNext();

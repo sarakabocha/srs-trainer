@@ -362,6 +362,12 @@ textarea { resize: none; min-height: 72px; }
   z-index: 3;
   aspect-ratio: 1 / 1;
 }
+.see-card:has(#pair-options) {
+  aspect-ratio: auto;
+}
+.card-stack-wrap:has(#pair-options) .card-stack-layer {
+  display: none;
+}
 .see-card .session-body {
   flex: 1;
 }
@@ -1057,6 +1063,9 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   font-size: var(--fs-body-sm);
   color: var(--text-secondary);
   margin-left: auto;
+  text-align: right;
+  word-break: break-word;
+  flex-shrink: 1;
 }
 .pair-option.correct {
   border-color: color-mix(in srgb, var(--teal) 40%, transparent);

@@ -1192,12 +1192,21 @@ async function getAiFeedback(phase,ko,en){
   if(!answer){document.getElementById(outId).innerHTML=`<div class="ai-loading">Write something first.</div>`;return;}
   // Show user's reply as a chat bubble
   const replyArea=document.getElementById('use-reply-area');
+  let newBubble=null;
+  let prevLatest=null;
+  let removedSuggestions=[];
   if(replyArea){
-    replyArea.querySelectorAll('.chat-suggestion').forEach(el=>el.remove());
-    const prev=replyArea.querySelector('.user-reply-latest');
-    if(prev) prev.classList.remove('user-reply-latest');
+    replyArea.querySelectorAll('.chat-suggestion').forEach(el=>{removedSuggestions.push(el.cloneNode(true));el.remove();});
+    prevLatest=replyArea.querySelector('.user-reply-latest');
+    if(prevLatest) prevLatest.classList.remove('user-reply-latest');
     replyArea.insertAdjacentHTML('beforeend',`<div class="chat-bubble chat-outgoing user-reply-latest">${esc(answer)}</div>`);
+    newBubble=replyArea.querySelector('.user-reply-latest');
   }
+  const rollbackBubble=()=>{
+    if(newBubble){newBubble.remove();newBubble=null;}
+    if(prevLatest) prevLatest.classList.add('user-reply-latest');
+    if(replyArea) removedSuggestions.forEach(el=>replyArea.appendChild(el));
+  };
   replyArea.insertAdjacentHTML('afterend',`<div class="chat-bubble chat-incoming chat-typing" id="typing-indicator"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`);
   document.getElementById(outId).innerHTML='';
   const ctxObj=sessionContexts[sessIdx]||{prompt:''};
@@ -1210,7 +1219,7 @@ async function getAiFeedback(phase,ko,en){
       body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:300,messages:[{role:'user',content:prompt}]})
     });
     const data=await res.json();
-    if(data.error){const t=document.getElementById('typing-indicator');if(t)t.remove();document.getElementById(outId).innerHTML=`<div class="ai-loading">Error: ${data.error.message}</div>`;return;}
+    if(data.error){const t=document.getElementById('typing-indicator');if(t)t.remove();rollbackBubble();document.getElementById(outId).innerHTML=`<div class="ai-loading">Error: ${data.error.message}</div>`;return;}
     const text=data.content?.[0]?.text||'';
     const scoreM=text.match(/SCORE:\s*(.+)/i);
     const feedM=text.match(/FEEDBACK:\s*(.+)/i);
@@ -1266,6 +1275,7 @@ async function getAiFeedback(phase,ko,en){
     if(skipBtn) skipBtn.innerHTML='next '+SVG_ARROW_RIGHT;
   }catch(e){
     const t=document.getElementById('typing-indicator');if(t)t.remove();
+    rollbackBubble();
     document.getElementById(outId).innerHTML=`<div class="ai-loading">Could not reach API. Check your key and connection.</div>`;
   }
 }

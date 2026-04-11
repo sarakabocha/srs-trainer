@@ -621,7 +621,7 @@ function renderSessionPhase(){
       `<div class="card use-card">` +
       `<div class="session-body use-chat">` +
       `<div class="chat-bubble chat-incoming">${esc(ctxObj.bubble)}</div>` +
-      `<div id="use-reply-area" style="justify-items: flex-end;"></div>` +
+      `<div id="use-reply-area" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;"></div>` +
       `<div class="chat-target">"${esc(w.ko)}"</div>` +
       `<div class="use-input-area">` +
       `<div class="use-input-wrap">` +

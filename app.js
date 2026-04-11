@@ -1197,7 +1197,6 @@ async function getAiFeedback(phase,ko,en){
       if(reaction) replyBubble.insertAdjacentHTML('afterbegin',`<span class="chat-reaction">${reaction}</span>`);
     }
     // Show suggestion as a corrected reply bubble
-    const replyArea=document.getElementById('use-reply-area');
     if(sugg&&sugg.toLowerCase()!=='none'&&replyArea){
       const m=sugg.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
       const suggKo=m?m[1]:sugg;

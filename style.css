@@ -1103,7 +1103,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   .menu-wrap { position: absolute; right: 0; top: 0; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
   .stat .n { font-size: var(--fs-heading); }
-  .flashcard-word { font-size: 32px; }
+  .flashcard-word { font-size: 32px; text-align: center; }
   .card { padding: 1rem; }
   .section-head.clickable { margin: -1rem; padding: 1rem; margin-bottom: 0; }
   #phase-content { font-size: var(--fs-body); }

@@ -1246,7 +1246,7 @@ function exportData(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   const date=new Date().toISOString().slice(0,10);
-  a.href=url;a.download=`korean-srs-${date}.json`;
+  a.href=url;a.download=`${date}-korean-srs.json`;
   a.click();URL.revokeObjectURL(url);
   showSyncFeedback('Progress exported.');
 }
@@ -1258,11 +1258,19 @@ function importData(e){
   reader.onload=function(ev){
     try{
       const imported=JSON.parse(ev.target.result);
-      if(!imported.words){showSyncFeedback('Invalid file — no word bank found.');return;}
-      saveDB(imported);
-      loadHome();
-      const count=Object.keys(imported.words).length;
-      showSyncFeedback(`Imported ${count} word${count!==1?'s':''} — replaced all progress.`);
+      if(imported.progress&&imported.progress.words){
+        saveDB(imported.progress);
+        if(Array.isArray(imported.stories))saveStories(imported.stories);
+        loadHome();
+        const count=Object.keys(imported.progress.words).length;
+        const sc=imported.stories?imported.stories.length:0;
+        showSyncFeedback(`Imported ${count} word${count!==1?'s':''} and ${sc} stor${sc!==1?'ies':'y'}.`);
+      }else if(imported.words){
+        saveDB(imported);
+        loadHome();
+        const count=Object.keys(imported.words).length;
+        showSyncFeedback(`Imported ${count} word${count!==1?'s':''} — replaced all progress.`);
+      }else{showSyncFeedback('Invalid file — no word bank found.');return;}
     }catch(err){showSyncFeedback('Could not read file.');}
   };
   reader.readAsText(file);
@@ -1530,6 +1538,20 @@ function renderStoriesList(){
   }).join('');
 }
 
+function exportAll(){
+  const db=getDB();
+  const stories=getSavedStories();
+  const bundle={progress:db,stories:stories};
+  const json=JSON.stringify(bundle,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toISOString().slice(0,10);
+  a.href=url;a.download=stories.length?`${date}-stories-korean-srs.json`:`${date}-korean-srs.json`;
+  a.click();URL.revokeObjectURL(url);
+  showSyncFeedback('Progress & stories exported.');
+}
+
 function exportStories(){
   const stories=getSavedStories();
   if(!stories.length){showSyncFeedback('No stories to export.');return;}
@@ -1538,7 +1560,7 @@ function exportStories(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a');
   const date=new Date().toISOString().slice(0,10);
-  a.href=url;a.download=`korean-stories-${date}.json`;
+  a.href=url;a.download=`${date}-korean-stories.json`;
   a.click();URL.revokeObjectURL(url);
   showSyncFeedback('Stories exported.');
 }

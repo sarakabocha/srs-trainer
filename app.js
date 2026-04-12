@@ -25,10 +25,10 @@ const CONTEXTS=[
   (ko,en)=>({bubble:'뭐 추천해 줄 수 있어?',prompt:`A friend asks: "뭐 추천해 줄 수 있어?" Recommend something using "${ko}" (${en}).`}),
   (ko,en)=>({bubble:'나한테 할 말 없어?',prompt:`A friend says: "나한테 할 말 없어?" Apologize using "${ko}" (${en}).`}),
   // Sentence starters
-  (ko,en)=>({bubble:'솔직히 말해 봐...',prompt:`Finish this in Korean using "${ko}" (${en}): "솔직히 말하면..." (honestly speaking...)`}),
-  (ko,en)=>({bubble:'그때 무슨 일이 있었어?',prompt:`Finish this in Korean using "${ko}" (${en}): "그때 알았어..." (that's when I realized...)`}),
-  (ko,en)=>({bubble:'처음부터 알았어?',prompt:`Finish this in Korean using "${ko}" (${en}): "처음에는 몰랐는데..." (at first I didn't know, but...)`}),
-  (ko,en)=>({bubble:'만약에 말이야...',prompt:`Finish this in Korean using "${ko}" (${en}): "만약에..." (if...)`}),
+  (ko,en)=>({bubble:'솔직히 말해 봐...',prompt:`Your friend says: "솔직히 말해 봐..." Be honest about something using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'그때 무슨 일이 있었어?',prompt:`Someone asks: "그때 무슨 일이 있었어?" Tell them what happened using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'처음부터 알았어?',prompt:`A friend asks: "처음부터 알았어?" Explain what you didn't know at first using "${ko}" (${en}).`}),
+  (ko,en)=>({bubble:'그런 적 있어?',prompt:`A friend asks: "그런 적 있어?" Describe a time it happened using "${ko}" (${en}).`}),
 ];
 const INTERVALS={good:[1,3,7,14,30],ok:[1,2,4,10],hard:[0,0,1,2]};
 const SESSION_SIZES=[5,10,15,0];

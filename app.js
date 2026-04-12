@@ -579,7 +579,10 @@ function renderSessionPhase(){
       `<div class="see-remaining label">${remaining} word${remaining !== 1 ? 's' : ''} left</div>` +
       `<div class="card use-card">` +
       `<div class="session-body use-chat">` +
-      `<div class="chat-bubble chat-incoming">${esc(ctxObj.bubble)}</div>` +
+      `<div class="chat-prompt-row">` +
+      `<div class="chat-bubble chat-incoming" id="use-bubble">${esc(ctxObj.bubble)}</div>` +
+      `${hasKey?`<button class="btn-refresh-prompt" id="refresh-prompt-btn" onclick="refreshUsePrompt(${escJS(w.ko)},${escJS(w.en)})" title="New prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>`:''}` +
+      `</div>` +
       `<div id="use-reply-area" style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;"></div>` +
       `<div class="chat-target">"${esc(w.ko)}"</div>` +
       `<div class="use-input-area">` +
@@ -610,6 +613,28 @@ function renderSessionPhase(){
       }
     }, 50);
   }
+}
+
+async function refreshUsePrompt(ko,en){
+  const key=getApiKey();if(!key)return;
+  const btn=document.getElementById('refresh-prompt-btn');
+  if(btn){btn.disabled=true;btn.classList.add('spinning');}
+  const prompt=`You are helping a Korean language learner practice the word "${ko}" (${en}). Generate a short, casual Korean text message (1 sentence, under 15 words) that a friend might send, where replying naturally requires using "${ko}". The message should feel like a real conversation starter — not a test question. Reply with ONLY the Korean message, nothing else.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:100,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    const bubble=data.content?.[0]?.text?.trim();
+    if(bubble){
+      const el=document.getElementById('use-bubble');
+      if(el)el.textContent=bubble;
+      sessionContexts[sessIdx]={bubble,prompt:`Your friend says: "${bubble}" Reply using "${ko}" (${en}).`};
+    }
+  }catch(e){}
+  if(btn){btn.disabled=false;btn.classList.remove('spinning');}
 }
 
 function stopRecognition(){

@@ -1194,7 +1194,7 @@ async function getAiFeedback(phase,ko,en){
   document.getElementById(outId).innerHTML='';
   const ctxObj=sessionContexts[sessIdx]||{prompt:''};
   const ctxPrompt=typeof ctxObj==='string'?ctxObj:(ctxObj.prompt||'');
-  const prompt=`You are a Korean language tutor for an upper-intermediate learner. The target word is "${ko}" (${en}).\n\nThe learner was given this prompt:\n"${ctxPrompt}"\n\nThe learner wrote:\n"${answer}"\n\nEvaluate in 3 parts, be concise:\n1. SCORE: one of — great / good / needs work\n2. FEEDBACK: 1-2 sentences on grammar, naturalness, or word usage. Did they respond appropriately to the prompt? Be specific.\n3. SUGGESTION: If score is not "great", rewrite the sentence more naturally. The suggestion MUST use the target word "${ko}". (Korean only, then translation in parentheses). If great, skip this.\n\nReply in this exact format:\nSCORE: [great/good/needs work]\nFEEDBACK: [your feedback]\nSUGGESTION: [improved sentence using ${ko} (translation)] or none`;
+  const prompt=`You are a Korean language tutor for an upper-intermediate learner. The target word is "${ko}" (${en}).\n\nThe learner was given this prompt:\n"${ctxPrompt}"\n\nThe learner wrote:\n"${answer}"\n\nEvaluate in 3 parts, be concise:\n1. SCORE: one of — great / good / needs work\n2. FEEDBACK: 2-3 short bullet points on grammar, naturalness, word usage, or appropriateness to the prompt. Each bullet is one sentence max. Start each bullet with "- " on its own line. Be specific.\n3. SUGGESTION: If score is not "great", rewrite the sentence more naturally. The suggestion MUST use the target word "${ko}". (Korean only, then translation in parentheses). If great, skip this.\n\nReply in this exact format:\nSCORE: [great/good/needs work]\nFEEDBACK:\n- [bullet one]\n- [bullet two]\n- [optional bullet three]\nSUGGESTION: [improved sentence using ${ko} (translation)] or none`;
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -1205,7 +1205,7 @@ async function getAiFeedback(phase,ko,en){
     if(data.error){const t=document.getElementById('typing-indicator');if(t)t.remove();rollbackBubble();document.getElementById(outId).innerHTML=`<div class="ai-loading">Error: ${data.error.message}</div>`;return;}
     const text=data.content?.[0]?.text||'';
     const scoreM=text.match(/SCORE:\s*(.+)/i);
-    const feedM=text.match(/FEEDBACK:\s*(.+)/i);
+    const feedM=text.match(/FEEDBACK:\s*([\s\S]*?)(?=\n\s*SUGGESTION:|$)/i);
     const suggM=text.match(/SUGGESTION:\s*([\s\S]+?)(?:\n\n|$)/i);
     const score=(scoreM?.[1]||'').trim().toLowerCase();
     const feed=(feedM?.[1]||'').trim();
@@ -1231,7 +1231,11 @@ async function getAiFeedback(phase,ko,en){
         `${esc(suggKo)}` +
         `</div>`);
     }
-    let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span><div>${esc(feed)}</div></div>`;
+    const feedBullets=feed.split(/\n+/).map(l=>l.replace(/^\s*[-•*]\s*/,'').trim()).filter(Boolean);
+    const feedHtml=feedBullets.length>1
+      ?`<ul class="fb-bullets">${feedBullets.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>`
+      :`<div>${esc(feedBullets[0]||feed)}</div>`;
+    let html=`<div class="ai-feedback-box"><div class="fb-label">evaluation</div><span class="fb-score ${scoreClass}">${scoreLabel}</span>${feedHtml}</div>`;
     if(sugg&&sugg.toLowerCase()!=='none'){
       const m=sugg.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
       if(m) html+=`<div class="fb-suggestion"><div class="fb-label">suggestion</div><div>${esc(m[1])}</div><div class="muted">${esc(m[2])}</div></div>`;
